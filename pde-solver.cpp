@@ -19,78 +19,79 @@ void set_mesh(int& nx, int&ny, double& lx, double& ly){            //set mesh si
     //eg. Mesh mesh(nx, ny, lx, ly);
 }
 
-void set_mesh_min(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double minu) {
+void set_mesh_min(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double t_avg) {
     for (int i = 1; i < nx - 1; i++) {
         //update from left to right
         for (int j = 1; j < ny - 1; j++) {
-            mesh[i][j] = minu;
+            mesh[i][j] = t_avg;
         }
     }
 }
 
-void set_boundaries(std::vector<std::vector<double>>& mesh, int nx, int ny) {
-    double u_bot{0.0};
-    double u_top{0.0};
-    double u_left{0.0};
-    double u_right{0.0};
-    double minu {0.0};
+void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const int ny) {
+    double t_bot{0.0};
+    double t_top{0.0};
+    double t_left{0.0};
+    double t_right{0.0};
+    double t_avg {0.0};
     std::cout << "Enter constant bottom boundary value (and corners):" << '\n';
-    std::cin >> u_bot;
+    std::cin >> t_bot;
     std::cout << "Enter constant top boundary value (and corners):" << '\n';
-    std::cin >> u_top;
+    std::cin >> t_top;
     std::cout << "Enter constant left boundary value:" << '\n';
-    std::cin >> u_left;
+    std::cin >> t_left;
     std::cout << "Enter constant right boundary value:" << '\n';
-    std::cin >> u_right;
+    std::cin >> t_right;
     for (int i = 0; i < ny; i++) {
-        mesh[0][i] = u_bot;
+        mesh[0][i] = t_bot;
     }
     for (int i = 0; i < ny; i++) {
-        mesh[nx - 1][i] = u_top;
+        mesh[nx - 1][i] = t_top;
     }
     for (int i = 1; i < nx - 1; i++) {
-        mesh[i][0] = u_left;
+        mesh[i][0] = t_left;
     }
     for (int i = 1; i < nx - 1; i++) {
-        mesh[i][ny - 1] = u_right;
+        mesh[i][ny - 1] = t_right;
     }
     //find minimum of boundaries and set rest of mesh to minimum -> faster computation
-    minu = std::min({u_bot, u_top, u_left, u_right});
-    set_mesh_min(mesh, nx, ny, minu);
+    t_avg = (t_bot + t_top + t_left + t_right) / 4;
+    set_mesh_min(mesh, nx, ny, t_avg);
 }
 
 void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int maxiter, double tol){
     //solver
     int iter {1};
-    double uold {0};
+    double t_old {0};
+    double maxdiff {0.0};
     double diff {0.0};
-    bool tolreached = false;
+    //bool tolreached = false;
     int nodes = (nx - 2) * (ny - 2);
     while (iter <= maxiter) {
-        tolreached = true;
-        diff = 0.0;
+        maxdiff = 0.0;
         //update from bottom to top
         for (int i = 1; i < nx - 1; i++) {
             //update from left to right
             for (int j = 1; j < ny - 1; j++) {
-                uold = mesh[i][j];
+                t_old = mesh[i][j];
                 mesh[i][j] = 0.25 * (mesh[i - 1][j] + mesh[i + 1][j] + mesh[i][j - 1] + mesh[i][j + 1]);
                 //std::cout << mesh[i][j] << '\n';
-                diff += std::abs(uold - mesh[i][j]) / nodes;
-                if (std::abs(uold - mesh[i][j]) > tol) {
-                    tolreached = false;
+                diff = std::abs(t_old - mesh[i][j]);
+                if (diff > maxdiff){
+                    maxdiff = diff;
                 }
             }
         }
         //comment one option out
         //option 1: compute average difference over mesh between iterations < tolerance -> stop iterations (!!!can become inaccurate for large mesh)
-        //if (diff < tol) {
-        //    break;
-        //}
-        //option 2: every meshpoint mustnot change more than tolerance between iterations -> stop iterations
-        if (tolreached) {
+        if (maxdiff < tol) {
+            std::cout << "Required tolerance reached. Solution converged." << '\n';
             break;
         }
+        //option 2: every meshpoint mustnot change more than tolerance between iterations -> stop iterations
+        //if (tolreached) {
+        //    break;
+        //}
         //std::cout << "Iteration " << iter << '\n';
         iter += 1;
         if (iter > maxiter) {
@@ -107,7 +108,7 @@ void save_to_file(std::vector<std::vector<double>>& mesh, const int nx, const in
     std::ofstream outfile("steady_state_sol.csv");
     if (!outfile.is_open()) {
         //
-        std::cerr << "Fehler: Konnte Datei " << "steady_state_sol.csv" << " nicht oeffnen." << std::endl;
+        std::cerr << "Error: Couldn't open 'steady_state_sol.csv'." << std::endl;
         return;
     }
     //csv-header
