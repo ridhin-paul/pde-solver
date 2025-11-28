@@ -14,7 +14,7 @@ int main() {
     const double dx = double(lx) / (nx - 1);
     const double dy = double(ly) / (ny - 1);
     //Initialize mesh
-    std::vector<std::vector<double>> mesh(nx, std::vector<double>(ny, 0));
+    std::vector<std::vector<double>> mesh(nx, std::vector<double>(ny, 0.0));
     //set boundaries
     set_boundaries(mesh, nx, ny);
     //std::cout << "testout";
