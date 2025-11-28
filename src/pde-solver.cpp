@@ -5,18 +5,32 @@
 #include <iomanip>
 #include <algorithm>
 
-void set_mesh(int& nx, int&ny, double& lx, double& ly){            //set mesh size and resolution
-    std::cout << "Enter number of nodes in x-direction:" << '\n';
+void set_mesh(int& nx, int& ny, double& lx, double& ly)
+{
+    std::cout << "Enter number of nodes in x-direction:\n";
     std::cin >> nx;
-    std::cout << "Enter number of nodes in y-direction:" << '\n';
+    std::cout << "Enter number of nodes in y-direction:\n";
     std::cin >> ny;
-    std::cout << "Enter length in x-direction:" << '\n';
+    std::cout << "Enter length in x-direction:\n";
     std::cin >> lx;
-    std::cout << "Enter length in y-direction:" << '\n';
+    std::cout << "Enter length in y-direction:\n";
     std::cin >> ly;
 
-    //creating a class Meas?
-    //eg. Mesh mesh(nx, ny, lx, ly);
+    if (!std::cin) {
+        throw std::runtime_error("Invalid input");
+    }
+
+
+    if (nx < 2 || ny < 2) {
+        throw std::runtime_error("nx and ny must be more than 2");
+    }
+    if (nx > 100000 || ny > 100000) {
+        throw std::runtime_error("Mesh dimensions too large.");
+    }
+
+    if (lx <= 0 || ly <= 0) {
+        throw std::runtime_error("Domain lengths must be positive.");
+    }
 }
 
 void set_mesh_min(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double t_avg) {
@@ -36,12 +50,17 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
     double t_avg {0.0};
     std::cout << "Enter constant bottom boundary value (and corners):" << '\n';
     std::cin >> t_bot;
+    if (!std::cin) throw std::runtime_error("Invalid input");
     std::cout << "Enter constant top boundary value (and corners):" << '\n';
     std::cin >> t_top;
+    if (!std::cin) throw std::runtime_error("Invalid input");
     std::cout << "Enter constant left boundary value:" << '\n';
     std::cin >> t_left;
+    if (!std::cin) throw std::runtime_error("Invalid input");
     std::cout << "Enter constant right boundary value:" << '\n';
     std::cin >> t_right;
+    if (!std::cin) throw std::runtime_error("Invalid input");
+
     for (int i = 0; i < ny; i++) {
         mesh[0][i] = t_bot;
     }
@@ -60,13 +79,12 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
 }
 
 void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int maxiter, double tol){
-    //solver
     int iter {1};
     double t_old {0};
     double maxdiff {0.0};
     double diff {0.0};
     //bool tolreached = false;
-    int nodes = (nx - 2) * (ny - 2);
+    //int nodes = (nx - 2) * (ny - 2);
     while (iter <= maxiter) {
         maxdiff = 0.0;
         //update from bottom to top
@@ -101,7 +119,6 @@ void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, co
 }
 
 void save_to_file(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double dx, const double dy){
-    //saves file to "steady_state_sol.csv" as csv with structure (x, y, value)
     double x {0.0};
     double y {0.0};
     //open file

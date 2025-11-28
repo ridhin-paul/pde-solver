@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "pde-solver.h"
+
 int main() {
     //Define parameters
     //nx, ny: points on mesh in x-, y-direction
