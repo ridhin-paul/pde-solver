@@ -20,16 +20,15 @@ void set_mesh(int& nx, int& ny, double& lx, double& ly)
         throw std::runtime_error("Invalid input");
     }
 
-
-    if (nx < 2 || ny < 2) {
+    if (nx <= 2 || ny <= 2) {
         throw std::runtime_error("nx and ny must be more than 2");
     }
     if (nx > 100000 || ny > 100000) {
-        throw std::runtime_error("Mesh dimensions too large.");
+        throw std::runtime_error("Mesh dimensions too large");
     }
 
     if (lx <= 0 || ly <= 0) {
-        throw std::runtime_error("Domain lengths must be positive.");
+        throw std::runtime_error("Domain lengths must be positive");
     }
 }
 
@@ -78,6 +77,7 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
     set_mesh_min(mesh, nx, ny, t_avg);
 }
 
+
 void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int maxiter, double tol){
     int iter {1};
     double t_old {0};
@@ -113,12 +113,14 @@ void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, co
         //std::cout << "Iteration " << iter << '\n';
         iter += 1;
         if (iter > maxiter) {
-            std::cout << "Iterations limit reached(" << maxiter << "), required toleranz not achieved. Decrease mesh size or increase iterations limit." << '\n';
+            //May be create a return type of boolean to check if the solver workedk? make testing easier.
+            throw std::runtime_error("maximum iterations (" + std::to_string(maxiter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
         }
     }
 }
 
-void save_to_file(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double dx, const double dy){
+
+void save_to_file(const std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double dx, const double dy){
     double x {0.0};
     double y {0.0};
     //open file

@@ -17,7 +17,7 @@ target_include_directories(pde_solver_lib PUBLIC
 add_executable(pde_solver src/main.cpp)
 target_link_libraries(pde_solver PRIVATE pde_solver_lib)
 
-#Catch2 for Unit Testing -- advised to use a package manager in that case pls edit this file (use find_package())
+#Catch2 for Unit Testing - recomended to use a package manager, in that case pls edit this file (use find_package())
 include(FetchContent)
 
 FetchContent_Declare(
@@ -28,10 +28,11 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+
 enable_testing()
 
 #Creating test executable
-add_executable(run_tests tests/test.cpp)
+add_executable(run_tests tests/test_S1.cpp)
 
 target_link_libraries(run_tests PRIVATE pde_solver_lib Catch2::Catch2WithMain)
 
