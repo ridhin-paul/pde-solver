@@ -7,6 +7,7 @@
 
 void set_mesh(int& nx, int& ny, double& lx, double& ly)
 {
+    //input mesh size and length
     std::cout << "Enter number of nodes in x-direction:\n";
     std::cin >> nx;
     std::cout << "Enter number of nodes in y-direction:\n";
@@ -20,21 +21,23 @@ void set_mesh(int& nx, int& ny, double& lx, double& ly)
         throw std::runtime_error("Invalid input");
     }
 
+    //check if mesh is bigger than 2 in both directions
     if (nx <= 2 || ny <= 2) {
         throw std::runtime_error("nx and ny must be more than 2");
     }
+    //limit meshsize
     if (nx > 100000 || ny > 100000) {
         throw std::runtime_error("Mesh dimensions too large");
     }
-
+    //check if length is greater than 0
     if (lx <= 0 || ly <= 0) {
         throw std::runtime_error("Domain lengths must be positive");
     }
 }
 
-void set_mesh_min(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double t_avg) {
+void set_mesh_avg(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double t_avg) {
+    //update mesh to t_avg
     for (int i = 1; i < nx - 1; i++) {
-        //update from left to right
         for (int j = 1; j < ny - 1; j++) {
             mesh[i][j] = t_avg;
         }
@@ -47,6 +50,7 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
     double t_left{0.0};
     double t_right{0.0};
     double t_avg {0.0};
+    //input boundary values
     std::cout << "Enter constant bottom boundary value (and corners):" << '\n';
     std::cin >> t_bot;
     if (!std::cin) throw std::runtime_error("Invalid input");
@@ -59,7 +63,7 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
     std::cout << "Enter constant right boundary value:" << '\n';
     std::cin >> t_right;
     if (!std::cin) throw std::runtime_error("Invalid input");
-
+    //set mesh boundaries
     for (int i = 0; i < ny; i++) {
         mesh[0][i] = t_bot;
     }
@@ -72,53 +76,59 @@ void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const 
     for (int i = 1; i < nx - 1; i++) {
         mesh[i][ny - 1] = t_right;
     }
-    //find minimum of boundaries and set rest of mesh to minimum -> faster computation
+    //find average of boundaries and set rest of mesh to average -> faster computation
     t_avg = (t_bot + t_top + t_left + t_right) / 4;
-    set_mesh_min(mesh, nx, ny, t_avg);
+    set_mesh_avg(mesh, nx, ny, t_avg);
 }
 
+void set_tol_iter(int nx, int ny, double& tol, int &max_iter) {
+    //input wanted tolerance
+    std::cout << "Set required tolerance for convergence:\n";
+    std::cin >> tol;
+    if (!std::cin) throw std::runtime_error("Invalid input");
+    //input user specified max iterations
+    std::cout << "Set maximum number of iterations for convergence:\n";
+    std::cin >> max_iter;
+    if (!std::cin) throw std::runtime_error("Invalid input");
+}
 
-void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int maxiter, double tol){
+void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int max_iter, double tol){
     int iter {1};
     double t_old {0};
-    double maxdiff {0.0};
+    double max_diff {0.0};
     double diff {0.0};
-    //bool tolreached = false;
-    //int nodes = (nx - 2) * (ny - 2);
-    while (iter <= maxiter) {
-        maxdiff = 0.0;
+    //run solver for maximum of maxiter iterations
+    while (iter <= max_iter) {
+        max_diff = 0.0;
         //update from bottom to top
         for (int i = 1; i < nx - 1; i++) {
             //update from left to right
             for (int j = 1; j < ny - 1; j++) {
+                //save old value
                 t_old = mesh[i][j];
+                //overwrite node with new value
                 mesh[i][j] = 0.25 * (mesh[i - 1][j] + mesh[i + 1][j] + mesh[i][j - 1] + mesh[i][j + 1]);
-                //std::cout << mesh[i][j] << '\n';
+                //compute difference between old and new value
                 diff = std::abs(t_old - mesh[i][j]);
-                if (diff > maxdiff){
-                    maxdiff = diff;
+                //set maxdiff of current iteration diff if higher than before
+                if (diff > max_diff){
+                    max_diff = diff;
                 }
             }
         }
-        //comment one option out
-        //option 1: compute average difference over mesh between iterations < tolerance -> stop iterations (!!!can become inaccurate for large mesh)
-        if (maxdiff < tol) {
-            std::cout << "Required tolerance reached. Solution converged." << '\n';
+        //if tolerance at each meshpoint between iterations reached -> solution converged, stop solver
+        if (max_diff < tol) {
+            std::cout << "Required tolerance reached after " << iter << " iterations. Solution converged." << '\n';
             break;
         }
-        //option 2: every meshpoint mustnot change more than tolerance between iterations -> stop iterations
-        //if (tolreached) {
-        //    break;
-        //}
-        //std::cout << "Iteration " << iter << '\n';
+        //increment iterations count
         iter += 1;
-        if (iter > maxiter) {
-            //May be create a return type of boolean to check if the solver workedk? make testing easier.
-            throw std::runtime_error("maximum iterations (" + std::to_string(maxiter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
+        //when max iterations reached warn user: tolerance not reached
+        if (iter > max_iter) {
+            throw std::runtime_error("maximum iterations (" + std::to_string(max_iter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
         }
     }
 }
-
 
 void save_to_file(const std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double dx, const double dy){
     double x {0.0};
@@ -126,7 +136,6 @@ void save_to_file(const std::vector<std::vector<double>>& mesh, const int nx, co
     //open file
     std::ofstream outfile("steady_state_sol.csv");
     if (!outfile.is_open()) {
-        //
         std::cerr << "Error: Couldn't open 'steady_state_sol.csv'." << std::endl;
         return;
     }
@@ -143,7 +152,7 @@ void save_to_file(const std::vector<std::vector<double>>& mesh, const int nx, co
             outfile << x << "," << y << "," << mesh[i][j] << '\n';
         }
     }
-    //close
+    //close file
     outfile.close();
     std::cout<< "Solution succesfully saved to 'steady_state_sol.csv'." << '\n';
 }

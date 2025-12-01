@@ -13,7 +13,7 @@
 
 //sprint 1
 
-//stream redirection - to accomodate std::cin as its inside the function
+//stream redirection - to accomodate std::cin inside the function.
 struct InputRedirect {
     std::stringstream input_ss;
     std::streambuf* old_cin_buf;
@@ -38,7 +38,7 @@ struct InputRedirect {
 
 //Test cases for void set_mesh(int& N, int& M, double& Lx, double& Ly);
 
-//The below test will be replaced as input via console maybe removed in future, hence brocken into sections
+//The below test will be replaced as input via console maybe removed in future, hence brocken into sections.
 
 TEST_CASE("set_mesh function test scenerios", "[set_mesh]")
 {
@@ -201,6 +201,8 @@ TEST_CASE("solve_steady_state function compared to analytical solution", "[solve
 {
     constexpr  int nx = 5;
     constexpr int ny = 5;
+    constexpr int max_iter = 1000;
+    constexpr double tol_solver = 1.0e-6;
 
     Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
@@ -222,7 +224,7 @@ TEST_CASE("solve_steady_state function compared to analytical solution", "[solve
         mesh[i][ny - 1] = t_right;
     }
 
-    solve_steady_state(mesh, nx, ny);
+    solve_steady_state(mesh, nx, ny, max_iter, tol_solver);
 
     SECTION("Checks the solved interior nodes")
     {
@@ -284,10 +286,12 @@ TEST_CASE("solve_steady_state function compared to analytical solution", "[solve
 
 }
 
-TEST_CASE("solve_steady_state function: check for maximum iteration limit", "[solve_steady_state][maxiterLimit]")
+TEST_CASE("solve_steady_state function: check for maximum iteration limit", "[solve_steady_state][max_iterLimit]")
 {
     constexpr  int nx = 5;
     constexpr int ny = 5;
+    constexpr int max_iter = 3;
+    constexpr double tol_solver = 1.0e-8;
 
     Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
@@ -309,6 +313,5 @@ TEST_CASE("solve_steady_state function: check for maximum iteration limit", "[so
         mesh[i][ny - 1] = t_right;
     }
 
-    const int max_iter = 3;
-    REQUIRE_THROWS_WITH(solve_steady_state(mesh, nx, ny, max_iter), "maximum iterations (" + std::to_string(max_iter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
+    REQUIRE_THROWS_WITH(solve_steady_state(mesh, nx, ny, max_iter, tol_solver), "maximum iterations (" + std::to_string(max_iter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
 }
