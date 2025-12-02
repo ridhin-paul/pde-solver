@@ -35,7 +35,7 @@ void set_mesh(int& nx, int& ny, double& lx, double& ly)
     }
 }
 
-void set_mesh_avg(std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double t_avg) {
+void set_mesh_avg(Mesh& mesh, const int nx, const int ny, const double t_avg) {
     //update mesh to t_avg
     for (int i = 1; i < nx - 1; i++) {
         for (int j = 1; j < ny - 1; j++) {
@@ -44,7 +44,7 @@ void set_mesh_avg(std::vector<std::vector<double>>& mesh, const int nx, const in
     }
 }
 
-void set_boundaries(std::vector<std::vector<double>>& mesh, const int nx, const int ny) {
+void set_boundaries(Mesh& mesh, const int nx, const int ny) {
     double t_bot{0.0};
     double t_top{0.0};
     double t_left{0.0};
@@ -92,7 +92,8 @@ void set_tol_iter(int nx, int ny, double& tol, int &max_iter) {
     if (!std::cin) throw std::runtime_error("Invalid input");
 }
 
-void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, const int ny, int max_iter, double tol){
+void solve_steady_state(Mesh& mesh, const int nx, const int ny, int max_iter, double tol, double alpha){
+    std::cout<<"Steady state solver started"<<std::endl;
     int iter {1};
     double t_old {0};
     double max_diff {0.0};
@@ -107,7 +108,7 @@ void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, co
                 //save old value
                 t_old = mesh[i][j];
                 //overwrite node with new value
-                mesh[i][j] = 0.25 * (mesh[i - 1][j] + mesh[i + 1][j] + mesh[i][j - 1] + mesh[i][j + 1]);
+                mesh[i][j] = 1 / (2 * (1 + alpha * alpha)) * (mesh[i - 1][j] + mesh[i + 1][j] + alpha * alpha * (mesh[i][j - 1] + mesh[i][j + 1]));
                 //compute difference between old and new value
                 diff = std::abs(t_old - mesh[i][j]);
                 //set maxdiff of current iteration diff if higher than before
@@ -130,7 +131,7 @@ void solve_steady_state(std::vector<std::vector<double>>& mesh, const int nx, co
     }
 }
 
-void save_to_file(const std::vector<std::vector<double>>& mesh, const int nx, const int ny, const double dx, const double dy){
+void save_to_file(const Mesh& mesh, const int nx, const int ny, const double dx, const double dy){
     double x {0.0};
     double y {0.0};
     //open file

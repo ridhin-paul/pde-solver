@@ -7,8 +7,8 @@ using Mesh = std::vector<std::vector<double>>;
 
 // function declarations
 void set_mesh(int& N, int& M, double& Lx, double& Ly);
-void set_mesh_avg(std::vector<std::vector<double>>& mesh, int nx, int ny, double t_avg);
-void set_boundaries(std::vector<std::vector<double>>& mesh, int nx, int ny);
+void set_mesh_avg(Mesh& mesh, int nx, int ny, double t_avg);
+void set_boundaries(Mesh& mesh, int nx, int ny);
 void set_tol_iter(int nx, int ny, double& tol, int &max_iter);
 
 /**
@@ -23,9 +23,9 @@ void set_tol_iter(int nx, int ny, double& tol, int &max_iter);
  * max_iter     (iterations limit)(int)
  * tol          (maximum tolerance for convergence)(double)
 */
-void solve_steady_state(std::vector<std::vector<double>>& mesh, int nx, int ny, int max_iter, double tol);
+void solve_steady_state(Mesh& mesh, int nx, int ny, int max_iter, double tol, double alpha);
 
 //saves file to "steady_state_sol.csv" as csv with structure (x, y, value)
-void save_to_file(const std::vector<std::vector<double>>& U, int N, int M, double Lx, double Ly);
+void save_to_file(const Mesh& U, int N, int M, double Lx, double Ly);
 
 #endif

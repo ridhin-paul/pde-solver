@@ -16,6 +16,8 @@ int main() {
     const double dx = static_cast<double>(lx) / (nx - 1);
     const double dy = static_cast<double>(ly) / (ny - 1);
 
+    double alpha = dx/dy;
+
     //Initialize mesh
     Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
@@ -28,7 +30,7 @@ int main() {
     set_tol_iter(nx, ny, tol, max_iter);
 
     //solve for steady state
-    solve_steady_state(mesh, nx, ny, max_iter, tol);
+    solve_steady_state(mesh, nx, ny, max_iter, tol, alpha);
 
     //save to csv file "steady_state_sol.csv"
     save_to_file(mesh, nx, ny, dx, dy);

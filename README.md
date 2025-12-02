@@ -48,6 +48,7 @@ Set required tolerance for convergence:
 1e-5
 Set maximum number of iterations for convergence:
 20000
+Steady state solver started
 Required tolerance reached after 1200 iterations. Solution converged.
 Solution succesfully saved to 'steady_state_sol.csv'.
 Process finished with exit code 0
@@ -57,7 +58,7 @@ To visualize the solution, the saved file can be imported and plotted in a progr
 
 ![visualized example from top](images/example_sol_top.png)
 
-## Testing
+
 
 ## Roadmap
 The current implementation fulfills the requirements for Sprint 1 of the Bonus Project, these are:
@@ -78,7 +79,8 @@ In the third and last Sprint the performance of the code is improved. This inclu
 
 ## Group 65
 This project is the Bonus Project of Group 65 of the Advanced Programming lecture at TUM in the Wintersemester 2025/26.
+
 Authors:
-Narayan Adhikari
-Ridhin Paul
-Julius Sellmayer
+* Narayan Adhikari
+* Ridhin Paul
+* Julius Sellmayer

@@ -18,19 +18,15 @@ struct InputRedirect {
     std::stringstream input_ss;
     std::streambuf* old_cin_buf;
 
-    explicit InputRedirect(const std::string& input_data)
-    : old_cin_buf(std::cin.rdbuf()) {
-        // 1. Fill the stringstream with the desired input data
+    explicit InputRedirect(const std::string& input_data): old_cin_buf(std::cin.rdbuf())
+    {
         input_ss.str(input_data);
-        // 2. Redirect std::cin to read from the stringstream
         std::cin.rdbuf(input_ss.rdbuf());
-
-        // Ensure std::cin is in a good state before running the test
         std::cin.clear();
     }
 
-    ~InputRedirect() {
-        // 3. Restore the original std::cin buffer
+    ~InputRedirect()
+    {
         std::cin.rdbuf(old_cin_buf);
     }
 };
@@ -66,7 +62,6 @@ TEST_CASE("set_mesh function test scenerios", "[set_mesh]")
         std::string input_data = "1 10 5.0 10.0\n";
         InputRedirect redirect(input_data);
 
-        //The function is expected to throw runtime error
         REQUIRE_THROWS_WITH(set_mesh(nx, ny, lx, ly), "nx and ny must be more than 2");
     }
 
@@ -76,17 +71,15 @@ TEST_CASE("set_mesh function test scenerios", "[set_mesh]")
         std::string input_data = "x 10 5.0 10.0\n";
         InputRedirect redirect(input_data);
 
-        //The function is expected to throw runtime error
         REQUIRE_THROWS_WITH(set_mesh(nx, ny, lx, ly), "Invalid input");
     }
 
-    //Test 3 -> exception for domain length being negetive; can it be zero?
+    //Test 3 -> exception for domain length being negetive.
     SECTION("Throws exception for non-positive domain length") {
 
         std::string input_data = "10 10 -10.0 10.0\n";
         InputRedirect redirect(input_data);
 
-        //The function is expected to throw runtime error
         REQUIRE_THROWS_WITH(set_mesh(nx, ny, lx, ly), "Domain lengths must be positive");
     }
 }
@@ -96,15 +89,14 @@ TEST_CASE("set_mesh function test scenerios", "[set_mesh]")
 TEST_CASE("set_boundaries function correctly sets the 4 boundaries", "[set_boundaries][happy path]")
 {
 
-    //Defining fixed dimensions (constexpr suggested by ide)
+    //Defining fixed dimensions
     constexpr int nx = 10;
     constexpr int ny = 10;
 
+    Mesh mesh(nx, std::vector<double>(ny, 0.0));
+
 
     SECTION("Checks all the boundaries are set correctly: happy path 1") {
-
-        //New mesh created for each section
-        Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
 
         //Setting values to be tested
@@ -143,7 +135,6 @@ TEST_CASE("set_boundaries function correctly sets the 4 boundaries", "[set_bound
 
     SECTION("Checks all the boundaries are set correctly: happy path 2") {
 
-        Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
         const double t_bot_val = 10.6;
         const double t_top_val = -20.0;
@@ -202,7 +193,7 @@ TEST_CASE("solve_steady_state function compared to analytical solution", "[solve
     constexpr  int nx = 5;
     constexpr int ny = 5;
     constexpr int max_iter = 1000;
-    constexpr double tol_solver = 1.0e-6;
+    constexpr double tol_solver = 1.0e-2;
 
     Mesh mesh(nx, std::vector<double>(ny, 0.0));
 
@@ -224,7 +215,16 @@ TEST_CASE("solve_steady_state function compared to analytical solution", "[solve
         mesh[i][ny - 1] = t_right;
     }
 
-    solve_steady_state(mesh, nx, ny, max_iter, tol_solver);
+    constexpr  double lx = 1;
+    constexpr double ly = 1;
+
+    //Compute stepsize
+    constexpr  double dx = static_cast<double>(lx) / (nx - 1);
+    constexpr  double dy = static_cast<double>(ly) / (ny - 1);
+
+    double alpha = dx/dy;
+
+    solve_steady_state(mesh, nx, ny, max_iter, tol_solver, alpha);
 
     SECTION("Checks the solved interior nodes")
     {
@@ -300,6 +300,10 @@ TEST_CASE("solve_steady_state function: check for maximum iteration limit", "[so
     double t_left{10.0};
     double t_right{5.0};
 
+    //aplha set to 1 as square region is considered
+    constexpr double alpha = 1;
+
+    //Defining boundary conditions
     for (int i = 0; i < ny; i++) {
         mesh[0][i] = t_bot;
     }
@@ -313,5 +317,5 @@ TEST_CASE("solve_steady_state function: check for maximum iteration limit", "[so
         mesh[i][ny - 1] = t_right;
     }
 
-    REQUIRE_THROWS_WITH(solve_steady_state(mesh, nx, ny, max_iter, tol_solver), "maximum iterations (" + std::to_string(max_iter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
+    REQUIRE_THROWS_WITH(solve_steady_state(mesh, nx, ny, max_iter, tol_solver, alpha), "maximum iterations (" + std::to_string(max_iter) +") reached; required tolerance not achieved. ""Decrease mesh size or increase iteration limit.");
 }
