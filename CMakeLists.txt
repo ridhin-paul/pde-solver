@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 
 add_library(pde_solver_lib
-        src/pde-solver.cpp
-        src/pde-solver.h
+        src/pde_solver.cpp
+        src/pde_solver.h
 )
 
 target_include_directories(pde_solver_lib PUBLIC
@@ -14,7 +14,9 @@ target_include_directories(pde_solver_lib PUBLIC
 )
 
 
-add_executable(pde_solver src/main.cpp)
+add_executable(pde_solver src/main.cpp
+        src/io.cpp
+        src/io.h)
 target_link_libraries(pde_solver PRIVATE pde_solver_lib)
 
 #Catch2 for Unit Testing - recomended to use a package manager, in that case pls edit this file (use find_package())
