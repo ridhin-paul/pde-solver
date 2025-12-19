@@ -24,8 +24,12 @@ private:
     double t_left{0.0};
     double t_right{0.0};
 
+    //inner bcs
+    int n_in_bc {0};                                    //# of inner bcs
+    std::vector<std::tuple<int, int, double>> in_bc;    //x, y, value
+
 public:
-    std::tuple<int, int, double, double, int, double, double, double, double, double> read_input();
+    std::tuple<int, int, double, double, int, double, double, double, double, double, int, std::vector<std::tuple<int, int, double>>> read_input();
 
     static void write_output(const Mesh& mesh, double dx,  double dy);
 

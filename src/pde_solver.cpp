@@ -7,7 +7,7 @@ pde_solver::pde_solver()
     try
     {
         //can include logic based on type of solver or input expected
-        auto [nx, ny, lx, ly, max_iter, tolerance, t_top, t_bot, t_left, t_right] = config_data.read_input();
+        auto [nx, ny, lx, ly, max_iter, tolerance, t_top, t_bot, t_left, t_right, n_in_bc, in_bc] = config_data.read_input();
 
         nx_ = nx;
         ny_ = ny;
@@ -21,10 +21,11 @@ pde_solver::pde_solver()
         t_left_ = t_left;
         t_bot_ = t_bot;
 
+        n_in_bc_ = n_in_bc;
+        in_bc_ = in_bc;
+
         dx_ = lx_ / (nx_ - 1);
         dy_ = ly_ / (ny_ - 1);
-
-
 
         mesh_ = Mesh(nx_, std::vector<double>(ny_, 0.0));
 
@@ -37,6 +38,17 @@ pde_solver::pde_solver()
 
 }
 
+bool pde_solver::is_bc(int x, int y)
+{
+    //checks if node in mesh is set as inner bc
+    //outputs true or false -> node gets updated or not
+    for (auto [bc_x, bc_y, t] : in_bc_) {
+        if (x == bc_x && y == bc_y) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void pde_solver::solve_steady_state()
 {
@@ -56,13 +68,18 @@ void pde_solver::solve_steady_state()
         mesh_[i][ny_ - 1] = t_right_;
     }
 
-    //find average of boundaries and set rest of mesh to average -> faster computation
+    //setting inner bcs
+    for (auto [ix, iy, t] : in_bc_) {
+        mesh_[ix][iy] = t;
+    }
+
+    /*/find average of boundaries and set rest of mesh to average -> faster computation
     double t_avg = (t_bot_ + t_top_ + t_left_ + t_right_) / 4;
     for (int i = 1; i < nx_ - 1; i++) {
         for (int j = 1; j < ny_ - 1; j++) {
             mesh_[i][j] = t_avg;
         }
-    }
+    }*/
 
     std::cout<<"Steady state solver started"<<std::endl;
 
@@ -79,16 +96,19 @@ void pde_solver::solve_steady_state()
         for (int i = 1; i < nx_ - 1; i++) {
             //update from left to right
             for (int j = 1; j < ny_ - 1; j++) {
-                //save old value
-                t_old = mesh_[i][j];
-                //overwrite node with new value
-                mesh_[i][j] = 1 / (2 * (1 + alpha * alpha)) * (mesh_[i - 1][j] + mesh_[i + 1][j] + alpha * alpha * (mesh_[i][j - 1] + mesh_[i][j + 1]));
-                //compute difference between old and new value
-                diff = std::abs(t_old - mesh_[i][j]);
-                //set maxdiff of current iteration diff if higher than before
-                if (diff > max_diff){
-                    max_diff = diff;
+                if (!is_bc(i, j)) {
+                    //save old value
+                    t_old = mesh_[i][j];
+                    //overwrite node with new value
+                    mesh_[i][j] = 1 / (2 * (1 + alpha * alpha)) * (mesh_[i - 1][j] + mesh_[i + 1][j] + alpha * alpha * (mesh_[i][j - 1] + mesh_[i][j + 1]));
+                    //compute difference between old and new value
+                    diff = std::abs(t_old - mesh_[i][j]);
+                    //set maxdiff of current iteration diff if higher than before
+                    if (diff > max_diff){
+                        max_diff = diff;
+                    }
                 }
+
             }
         }
         //if tolerance at each meshpoint between iterations reached -> solution converged, stop solver

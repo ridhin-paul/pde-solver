@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iomanip>
 
-std::tuple<int, int, double, double, int, double, double, double, double, double> io::read_input()
+std::tuple<int, int, double, double, int, double, double, double, double, double, int, std::vector<std::tuple<int, int, double>>> io::read_input()
 {
         //input mesh size and length
         std::cout << "Enter number of nodes in x-direction:\n";
@@ -61,7 +61,41 @@ std::tuple<int, int, double, double, int, double, double, double, double, double
     std::cin >> t_right;
     if (!std::cin) throw std::runtime_error("Invalid input");
 
-    return std::make_tuple(nx, ny, lx, ly, max_iter, tolerance, t_top, t_bot, t_left, t_right);
+    //bcs in inner mesh
+    std::cout << "Enter number of inner nodes with boundary values:" << '\n';
+    std::cin >> n_in_bc;
+
+    for (int i = 0; i < n_in_bc; i++) {
+        double x_temp {0.0};
+        double y_temp {0.0};
+        double value_temp {0.0};
+        std::tuple<int, int, double> in_bc_temp;
+        std::cout << "Enter x-coordinate of inner boundary condition number " << i + 1 << ":" << '\n';
+        std::cin >> x_temp;
+        if (!std::cin) throw std::runtime_error("Invalid input");
+        if (x_temp < 0 || x_temp > lx) {
+            throw std::runtime_error("x-coordinate must be within domain.");
+        }
+        std::cout << "Enter y-coordinate of inner boundary condition number " << i + 1 << ":" << '\n';
+        std::cin >> y_temp;
+        if (!std::cin) throw std::runtime_error("Invalid input");
+        if (y_temp < 0 || y_temp > ly) {
+            throw std::runtime_error("y-coordinate must be within domain.");
+        }
+        std::cout << "Enter constant value of inner boundary condition number " << i + 1 << ":" << '\n';
+        std::cin >> value_temp;
+        if (!std::cin) throw std::runtime_error("Invalid input");
+
+        //compute indexes from coordinates and put in tuple
+        in_bc_temp = {
+            static_cast<int>(x_temp / lx * (nx - 1)),
+            static_cast<int>(y_temp / ly * (ny - 1)),
+            value_temp
+        };
+        in_bc.push_back(in_bc_temp);
+    }
+
+    return std::make_tuple(nx, ny, lx, ly, max_iter, tolerance, t_top, t_bot, t_left, t_right, n_in_bc, in_bc);
 }
 
 void io::write_output(const Mesh& mesh, const double dx, const double dy)

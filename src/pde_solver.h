@@ -18,9 +18,9 @@ private:
     double t_top_;
     double t_left_;
     double t_right_;
-
-
-
+    //inner bcs
+    int n_in_bc_;
+    std::vector<std::tuple<int, int, double>> in_bc_;
 
 public:
 
@@ -30,6 +30,8 @@ public:
 
     //constructor
     pde_solver();
+
+    bool is_bc(int x, int y);
 
     void solve_steady_state();
 
