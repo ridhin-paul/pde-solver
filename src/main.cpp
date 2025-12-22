@@ -4,8 +4,14 @@
 int main()
 {
 
-    pde_solver ss;
+
+
     io io;
+    //right now static member is accesed through the object but i need to change it once write_output logic id decided/
+    inputConfig cfg = io::read_input("config.ins");
+
+    pde_solver ss;
+
 
     ss.solve_steady_state();
 
@@ -15,7 +21,7 @@ int main()
     const auto dy = ss.dy_;
 
 
-    io.write_output(res, dx, dy);
+    io::write_output(res, dx, dy);
 
     return 0;
 }
