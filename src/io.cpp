@@ -5,7 +5,6 @@
 #include "io.h"
 #include <iostream>
 #include <stdexcept>
-#include <tuple>
 #include <fstream>
 #include <iomanip>
 
@@ -19,8 +18,7 @@ inputConfig io::read_input(const std::string& filename)
 
     std::string line;
     while (std::getline(file, line)) {
-
-        if (line.empty() || line[0] == '#') //# is defined as comments in the config file
+        if (line.empty() || line[0] == '#') //# is defined for comments in the config file
             continue;
 
         std::istringstream iss(line);
@@ -37,36 +35,66 @@ inputConfig io::read_input(const std::string& filename)
             else if (value == "polar")
                 cfg.cs = inputConfig::CoordinateSystem::Polar;
             else
-                throw std::runtime_error("Unknown coordinate system: " + value);
+                throw std::runtime_error("Choose the coordinate system provided in the config file, " + value + " is unkmown");
         }
 
-        else if (key == "nx") iss >> cfg.nx;
-        else if (key == "ny") iss >> cfg.ny;
-        else if (key == "lx") iss >> cfg.lx;
-        else if (key == "ly") iss >> cfg.ly;
+        else if (key == "nx") {
+            if (!(iss >> cfg.nx))
+                throw std::runtime_error("nx must be an integer");
+        }
+        else if (key == "ny") {
+            if (!(iss >> cfg.ny))
+                throw std::runtime_error("ny must be an integer");
+        }
+        else if (key == "lx") {
+            if (!(iss >> cfg.lx))
+                throw std::runtime_error("lx must be an integer");
+        }
+        else if (key == "ly") {
+            if (!(iss >> cfg.ly))
+                throw std::runtime_error("ly must be an integer");
+        }
 
         //bcs
-        else if (key == "t_bot") iss >> cfg.t_bot;
-        else if (key == "t_top") iss >> cfg.t_top;
-        else if (key == "t_left") iss >> cfg.t_left;
-        else if (key == "t_right") iss >> cfg.t_right;
+        else if (key == "t_bot") {
+            if (!(iss >> cfg.t_bot))
+                throw std::runtime_error("t_bot must be an integer");
+        }
+        else if (key == "t_top") {
+            if (!(iss >> cfg.t_top))
+                throw std::runtime_error("t_top must be an integer");
+        }
+        else if (key == "t_left") {
+            if (!(iss >> cfg.t_left))
+                throw std::runtime_error("t_left must be an integer");
+        }
+        else if (key == "t_right") {
+            if (!(iss >> cfg.t_right))
+                throw std::runtime_error("t_right must be an integer");
+        }
+
         //inner bcs
         else if (key == "n_in_bc") {
             int n;
             iss >> n;
-            if (!iss & n<0)
+            if (!iss && n<0)
                 throw std::runtime_error("n_in_bc must be a positive integer");
             cfg.inner_bcs.clear();
 
             for (int i = 0; i < n; ++i)
             {
-                int x, y;
+                double x, y;
                 double value;
 
                 if (!(file >> x >> y >> value))
                     throw std::runtime_error("Invalid inner bc entry check the config file");
+                if (x < 0.0 || x > cfg.lx || y < 0.0 || y > cfg.ly)
+                    throw std::runtime_error("Inner BC coordinate outside domain");
 
-                cfg.inner_bcs.emplace_back(x, y, value);
+                int ix = static_cast<int>(x / cfg.lx * (cfg.nx - 1));
+                int iy = static_cast<int>(y / cfg.ly * (cfg.ny - 1));
+
+                cfg.inner_bcs.emplace_back(ix, iy, value);
             }
         }
 
@@ -80,123 +108,20 @@ inputConfig io::read_input(const std::string& filename)
     return cfg;
 }
 
-//Need to think how to implement validation
 
-// void io::check_input()
-// {
-//     //check if mesh is bigger than 2 in both directions
-//     if (nx <= 2 || ny <= 2) {
-//         throw std::runtime_error("nx and ny must be more than 2");
-//     }
-//     //limit meshsize
-//     if (nx > 100000 || ny > 100000) {
-//         throw std::runtime_error("Mesh dimensions too large");
-//     }
-//     //check if length is greater than 0
-//     if (lx <= 0 || ly <= 0) {
-//         throw std::runtime_error("Domain lengths must be positive");
-//     }
-// }
 
-std::tuple<int, int, double, double, int, double, double, double, double, double, int, std::vector<std::tuple<int, int, double>>> io::read_input()
+//Not a good implementation of write_output() but cannot finalised before seeing the implementation of polar...
+
+void io::write_output(const Mesh& mesh, const inputConfig& cfg)
 {
-        //input mesh size and length
-        std::cout << "Enter number of nodes in x-direction:\n";
-        std::cin >> nx;
-        std::cout << "Enter number of nodes in y-direction:\n";
-        std::cin >> ny;
-        std::cout << "Enter length in x-direction:\n";
-        std::cin >> lx;
-        std::cout << "Enter length in y-direction:\n";
-        std::cin >> ly;
+    const unsigned long nx = mesh.size();
+    const unsigned long ny = mesh[0].size();
 
-        if (!std::cin) {
-            throw std::runtime_error("Invalid input");
-        }
+    double x{0.}, y{0.};
 
-        //check if mesh is bigger than 2 in both directions
-        if (nx <= 2 || ny <= 2) {
-            throw std::runtime_error("nx and ny must be more than 2");
-        }
-        //limit meshsize
-        if (nx > 100000 || ny > 100000) {
-            throw std::runtime_error("Mesh dimensions too large");
-        }
-        //check if length is greater than 0
-        if (lx <= 0 || ly <= 0) {
-            throw std::runtime_error("Domain lengths must be positive");
-        }
-
-    std::cout << "Set required tolerance for convergence:\n";
-    std::cin >> tolerance;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-    //input user specified max iterations
-    std::cout << "Set maximum number of iterations for convergence:\n";
-    std::cin >> max_iter;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-
-    //bcs
-    //input boundary values
-    std::cout << "Enter constant bottom boundary value (and corners):" << '\n';
-    std::cin >> t_bot;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-    std::cout << "Enter constant top boundary value (and corners):" << '\n';
-    std::cin >> t_top;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-    std::cout << "Enter constant left boundary value:" << '\n';
-    std::cin >> t_left;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-    std::cout << "Enter constant right boundary value:" << '\n';
-    std::cin >> t_right;
-    if (!std::cin) throw std::runtime_error("Invalid input");
-
-    //bcs in inner mesh
-    std::cout << "Enter number of inner nodes with boundary values:" << '\n';
-    std::cin >> n_in_bc;
-
-    for (int i = 0; i < n_in_bc; i++) {
-        double x_temp {0.0};
-        double y_temp {0.0};
-        double value_temp {0.0};
-        std::tuple<int, int, double> in_bc_temp;
-        std::cout << "Enter x-coordinate of inner boundary condition number " << i + 1 << ":" << '\n';
-        std::cin >> x_temp;
-        if (!std::cin) throw std::runtime_error("Invalid input");
-        if (x_temp < 0 || x_temp > lx) {
-            throw std::runtime_error("x-coordinate must be within domain.");
-        }
-        std::cout << "Enter y-coordinate of inner boundary condition number " << i + 1 << ":" << '\n';
-        std::cin >> y_temp;
-        if (!std::cin) throw std::runtime_error("Invalid input");
-        if (y_temp < 0 || y_temp > ly) {
-            throw std::runtime_error("y-coordinate must be within domain.");
-        }
-        std::cout << "Enter constant value of inner boundary condition number " << i + 1 << ":" << '\n';
-        std::cin >> value_temp;
-        if (!std::cin) throw std::runtime_error("Invalid input");
-
-        //compute indexes from coordinates and put in tuple
-        in_bc_temp = {
-            static_cast<int>(x_temp / lx * (nx - 1)),
-            static_cast<int>(y_temp / ly * (ny - 1)),
-            value_temp
-        };
-        in_bc.push_back(in_bc_temp);
-    }
-
-    return std::make_tuple(nx, ny, lx, ly, max_iter, tolerance, t_top, t_bot, t_left, t_right, n_in_bc, in_bc);
-}
-
-void io::write_output(const Mesh& mesh, const double dx, const double dy)
-{
-    double x {0.0};
-    double y {0.0};
-
-    const int nx_o = mesh.size();
-
-    const int ny_o = mesh[0].size();
-
-
+    //look for an alternative
+    double _dx = cfg.lx / (cfg.nx - 1);
+    double _dy = cfg.ly / (cfg.ny - 1);
 
     //open file
     std::ofstream outfile("steady_state_sol.csv");
@@ -209,11 +134,12 @@ void io::write_output(const Mesh& mesh, const double dx, const double dy)
     //format
     outfile << std::fixed << std::setprecision(6);
     //iteration over mesh
-    for (int i = 0; i < nx_o; i++) {
-        for (int j = 0; j < ny_o; j++) {
-            x = i * dx;
-            y = j * dy;
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            x = i * _dx;
+            y = j * _dy;
             //write
+            //for some reason a space is introduced for before y and temp?
             outfile << x << "," << y << "," << mesh[i][j] << '\n';
         }
     }

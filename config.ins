@@ -1,0 +1,26 @@
+#Coordinate system => polar or cartesian
+cs cartesian
+
+# grid
+nx 100
+ny 100
+lx 1
+ly 1
+
+# solver
+max_iter 10000
+tolerance 1e-6
+
+# boundary conditions
+t_bot 8.0
+t_top 3.0
+t_left 11.0
+t_right 5.0
+
+# inner boundary conditions
+#need to write logic so as to not input n_in_bc
+n_in_bc 3
+0.50 0.50 25.0
+0.25 0.25 30.0
+0.75 0.75 50.0
+
