@@ -3,6 +3,7 @@
 //
 
 #include "io.h"
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <fstream>
@@ -86,15 +87,28 @@ inputConfig io::read_input(const std::string& filename)
             {
                 double x, y;
                 double value;
+                int ix, iy {0};
 
                 if (!(file >> x >> y >> value))
                     throw std::runtime_error("Invalid inner bc entry check the config file");
-                if (x < 0.0 || x > cfg.lx || y < 0.0 || y > cfg.ly)
-                    throw std::runtime_error("Inner BC coordinate outside domain");
-
-                int ix = static_cast<int>(x / cfg.lx * (cfg.nx - 1));
-                int iy = static_cast<int>(y / cfg.ly * (cfg.ny - 1));
-
+                switch (cfg.cs){
+                    case inputConfig::CoordinateSystem::Cartesian: {
+                        if (x < 0.0 || x > cfg.lx || y < 0.0 || y > cfg.ly)
+                            throw std::runtime_error("Inner BC coordinate outside domain");
+                        ix = static_cast<int>(x / cfg.lx * (cfg.nx - 1));
+                        iy = static_cast<int>(y / cfg.ly * (cfg.ny - 1));
+                        break;
+                    }
+                    case inputConfig::CoordinateSystem::Polar:
+                        if (x < 0.0 || x > cfg.lx)
+                            throw std::runtime_error("Inner BC coordinate outside domain");
+                        y = std::fmod(y, 360.0);
+                        ix = static_cast<int>(std::ceil(x / cfg.lx * cfg.nx));
+                        iy = static_cast<int>(y / 360.0 * cfg.ny);
+                        break;
+                    default:
+                        throw std::runtime_error("Undeclared coordinate system, declare before bcs!");
+                }
                 cfg.inner_bcs.emplace_back(ix, iy, value);
             }
         }
@@ -116,8 +130,10 @@ inputConfig io::read_input(const std::string& filename)
             if (!(iss >> cfg.ny))
                 throw std::runtime_error("na must be an integer ");
         }
-
-
+        else if (key == "t_out") {
+            if (!(iss >> cfg.t_bot))
+                throw std::runtime_error("t_out must be double ");
+        }
     }
     return cfg;
 }
