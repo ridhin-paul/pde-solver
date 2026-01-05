@@ -1,6 +1,7 @@
 #include <memory>
 #include "pde_solver.h"
 #include "pde_solver_cartesian.h"
+#include "pde_solver_polar.h"
 
 int main()
 {
@@ -18,6 +19,9 @@ try
         {
             case inputConfig::CoordinateSystem::Cartesian:
                 solver = std::make_unique<pde_solver_cartesian>(cfg);
+                break;
+            case inputConfig::CoordinateSystem::Polar:
+                solver = std::make_unique<pde_solver_polar>(cfg);
                 break;
             default:
                 throw std::runtime_error("Unknown input config");

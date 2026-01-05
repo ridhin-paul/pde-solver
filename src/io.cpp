@@ -73,6 +73,7 @@ inputConfig io::read_input(const std::string& filename)
                 throw std::runtime_error("t_right must be an integer");
         }
 
+
         //inner bcs
         else if (key == "n_in_bc") {
             int n;
@@ -103,6 +104,19 @@ inputConfig io::read_input(const std::string& filename)
         else if (key == "tolerance") iss >> cfg.tolerance;
 
         //implementation of polar....
+        else if (key == "lr") {
+            if (!(iss >> cfg.lx))
+                throw std::runtime_error("lr must be positive");
+        }
+        else if (key == "nr") {
+            if (!(iss >> cfg.nx))
+                throw std::runtime_error("nr must be an integer");
+        }
+        else if (key == "na") {
+            if (!(iss >> cfg.ny))
+                throw std::runtime_error("na must be an integer ");
+        }
+
 
     }
     return cfg;

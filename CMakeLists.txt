@@ -8,6 +8,8 @@ add_library(pde_solver_lib
         src/pde_solver.h
         src/pde_solver_cartesian.cpp
         src/pde_solver_cartesian.h
+        src/pde_solver_polar.cpp
+        src/pde_solver_polar.h
 )
 
 target_include_directories(pde_solver_lib PUBLIC
@@ -19,7 +21,9 @@ add_executable(pde_solver src/main.cpp
         src/io.cpp
         src/io.h
         src/pde_solver_cartesian.cpp
-        src/pde_solver_cartesian.h)
+        src/pde_solver_cartesian.h
+        src/pde_solver_polar.cpp
+        src/pde_solver_polar.h)
 target_link_libraries(pde_solver PRIVATE pde_solver_lib)
 
 #Catch2 for Unit Testing - recomended to use a package manager, in that case pls edit this file (use find_package())
