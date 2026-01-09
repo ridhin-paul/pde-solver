@@ -14,7 +14,8 @@ protected: //as per lecture now this can be accessed in derived class when imple
 public:
     //need to look for safety or find alternate logic =>required for write_output()
     Mesh _mesh;
-
+    double _center;
+    double _dx, _dy;
     explicit pde_solver(inputConfig cfg): _cfg(std::move(cfg)) {}
 
     virtual void solve() = 0;

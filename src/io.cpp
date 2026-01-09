@@ -102,9 +102,9 @@ inputConfig io::read_input(const std::string& filename)
                     case inputConfig::CoordinateSystem::Polar:
                         if (x < 0.0 || x > cfg.lx)
                             throw std::runtime_error("Inner BC coordinate outside domain");
-                        y = std::fmod(y, 360.0);
-                        ix = static_cast<int>(std::ceil(x / cfg.lx * cfg.nx));
-                        iy = static_cast<int>(y / 360.0 * cfg.ny);
+                        y = std::fmod(y, 2 * M_PI);
+                        ix = static_cast<int>(std::round((x / cfg.lx) * cfg.nx));
+                        iy = static_cast<int>(y / (2 * M_PI) * cfg.ny);
                         break;
                     default:
                         throw std::runtime_error("Undeclared coordinate system, declare before bcs!");
@@ -142,16 +142,9 @@ inputConfig io::read_input(const std::string& filename)
 
 //Not a good implementation of write_output() but cannot finalised before seeing the implementation of polar...
 
-void io::write_output(const Mesh& mesh, const inputConfig& cfg)
+void io::write_output(const Mesh& mesh, const inputConfig& cfg, double dx, double dy)
 {
-    const unsigned long nx = mesh.size();
-    const unsigned long ny = mesh[0].size();
-
     double x{0.}, y{0.};
-
-    //look for an alternative
-    double _dx = cfg.lx / (cfg.nx - 1);
-    double _dy = cfg.ly / (cfg.ny - 1);
 
     //open file
     std::ofstream outfile("steady_state_sol.csv");
@@ -164,13 +157,43 @@ void io::write_output(const Mesh& mesh, const inputConfig& cfg)
     //format
     outfile << std::fixed << std::setprecision(6);
     //iteration over mesh
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-            x = i * _dx;
-            y = j * _dy;
+    for (int i = 0; i < cfg.nx; i++) {
+        for (int j = 0; j < cfg.ny; j++) {
+            x = i * dx;
+            y = j * dy;
             //write
             //for some reason a space is introduced for before y and temp?
             outfile << x << "," << y << "," << mesh[i][j] << '\n';
+        }
+    }
+    //close file
+    outfile.close();
+    std::cout<< "Solution succesfully saved to 'steady_state_sol.csv'." << '\n';
+}
+
+void io::write_output(const Mesh& mesh, const inputConfig& cfg, double dr, double da, double center)
+{
+    double r{0.}, a{0.};
+
+    //open file
+    std::ofstream outfile("steady_state_sol.csv");
+    if (!outfile.is_open()) {
+        std::cerr << "Error: Couldn't open 'steady_state_sol.csv'." << std::endl;
+        return;
+    }
+    //csv-header
+    outfile << "radius, angle, temperature" << '\n';
+    //format
+    outfile << std::fixed << std::setprecision(6);
+    //iteration over mesh
+    outfile << 0.0 << "," << 00.0 << "," << center << '\n';
+    for (int i = 1; i <= cfg.nx; i++) {
+        for (int j = 0; j < cfg.ny; j++) {
+            r = i * dr;
+            a = j * da;
+            //write
+            //for some reason a space is introduced for before y and temp?
+            outfile << r << "," << a << "," << mesh[i - 1][j] << '\n';
         }
     }
     //close file

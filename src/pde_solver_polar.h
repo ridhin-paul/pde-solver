@@ -11,14 +11,10 @@
 class pde_solver_polar : public pde_solver
 {
 private:
-    double _dx = 0.0;
-    double _dy = 0.0;
-    double center = 0.0;
-
     void initialize_mesh();
     void initialize_boundary_conditions();
 
-    bool is_bc(int i, int j) const;
+    bool is_bc(int i, int j);
 
 public:
     explicit pde_solver_polar(const inputConfig& cfg);

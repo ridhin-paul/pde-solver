@@ -36,17 +36,17 @@ void pde_solver_cartesian::initialize_mesh()
 
 void pde_solver_cartesian::initialize_boundary_conditions()
 {
-    for (int i = 0; i < _cfg.ny; i++) {
-        _mesh[0][i] = _cfg.t_bot;
+    for (int i = 0; i < _cfg.nx; i++) {
+        _mesh[i][0] = _cfg.t_bot;
     }
-    for (int i = 0; i < _cfg.ny; i++) {
-        _mesh[_cfg.nx - 1][i] = _cfg.t_top;
+    for (int i = 0; i < _cfg.nx; i++) {
+        _mesh[i][_cfg.nx - 1] = _cfg.t_top;
     }
-    for (int i = 1; i < _cfg.nx - 1; i++) {
-        _mesh[i][0] = _cfg.t_left;
+    for (int i = 1; i < _cfg.ny - 1; i++) {
+        _mesh[0][i] = _cfg.t_left;
     }
-    for (int i = 1; i < _cfg.nx - 1; i++) {
-        _mesh[i][_cfg.ny - 1] = _cfg.t_right;
+    for (int i = 1; i < _cfg.ny - 1; i++) {
+        _mesh[_cfg.nx - 1][i] = _cfg.t_right;
     }
 
     for (const auto& [ix, iy, t] : _cfg.inner_bcs) {

@@ -28,9 +28,20 @@ try
         }
 
         solver->solve();
-
+        std::cout << "Solver finished, starting export." << std::endl;
         //cfg has 2 copies (base class solver and in main) but would be made one later
-        io::write_output(solver->_mesh, cfg);
+        switch (cfg.cs)
+        {
+            case inputConfig::CoordinateSystem::Cartesian:
+                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy);
+                break;
+            case inputConfig::CoordinateSystem::Polar:
+                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy, solver->_center);
+                break;
+            default:
+                throw std::runtime_error("Unknown input config");
+        }
+
         return 0;
     }
 

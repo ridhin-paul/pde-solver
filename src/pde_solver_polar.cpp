@@ -31,7 +31,7 @@ void pde_solver_polar::initialize_mesh()
         throw std::runtime_error("Domain radius must be positive");
 
     _dx = _cfg.lx / _cfg.nx;
-    _dy = 360.0 / _cfg.ny;
+    _dy = 2 * M_PI / _cfg.ny;
 
     _mesh = Mesh(_cfg.nx, std::vector<double>(_cfg.ny, 0.0));
 }
@@ -45,9 +45,9 @@ void pde_solver_polar::initialize_boundary_conditions()
     for (const auto& [ix, iy, t] : _cfg.inner_bcs) {
 
         if (ix == 0 && iy == 0) {
-            center *= c;
-            center += t;
-            center /= c + 1;
+            _center *= c;
+            _center += t;
+            _center /= c + 1;
             c++;
         }
         else
@@ -57,7 +57,7 @@ void pde_solver_polar::initialize_boundary_conditions()
 
 
 //what if it's too large? ->sprint 3    make mesh Aos with value + bool
-bool pde_solver_polar::is_bc(int i, int j) const
+bool pde_solver_polar::is_bc(int i, int j)
 {
     //checks if node in mesh is set as inner bc
     //outputs true or false -> node gets updated or not
@@ -79,11 +79,11 @@ void pde_solver_polar::solve()
         double max_diff = 0.0;
         //update center first
         if (!is_bc(0, 0)) {
-            center = 0;
+            _center = 0;
             for (int i = 0; i < _cfg.ny; i++) {
-                center += _mesh[0][i];
+                _center += _mesh[0][i];
             }
-            center /= _cfg.ny;
+            _center /= _cfg.ny;
         }
         //update from insideout
         for (int i = 0; i < _cfg.nx - 1; i++) {
@@ -97,7 +97,12 @@ void pde_solver_polar::solve()
                     //save old value
                     t_old = _mesh[i][j];
                     //overwrite node with new value
-                    _mesh[i][j] = 1 / C * (A * _mesh[i - 1][j] + B * _mesh[i + 1][j] + D * (_mesh[i][(_cfg.ny + j - 1) % _cfg.ny] + _mesh[i][(_cfg.ny + j + 1) % _cfg.ny]));
+                    if (i == 0) {
+                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _center + D * (_mesh[i][std::fmod(_cfg.ny + j - 1, _cfg.ny)] + _mesh[i][std::fmod(_cfg.ny + j + 1, _cfg.ny)]));
+                    }
+                    else {
+                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _mesh[i - 1][j] + D * (_mesh[i][std::fmod(_cfg.ny + j - 1, _cfg.ny)] + _mesh[i][std::fmod(_cfg.ny + j + 1, _cfg.ny)]));
+                    }
                     //compute difference between old and new value
                     diff = std::abs(t_old - _mesh[i][j]);
                     //set maxdiff of current iteration diff if higher than before

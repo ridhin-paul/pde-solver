@@ -48,7 +48,8 @@ public:
     static inputConfig read_input(const std::string& filename);
 
     //Implementation must be reconsidered after polar coordinates are implemented
-    static void write_output(const Mesh& mesh, const inputConfig& cfg);
+    static void write_output(const Mesh& mesh, const inputConfig& cfg, double dx, double dy);
+    static void write_output(const Mesh& mesh, const inputConfig& cfg, double dr, double da, double center);
 };
 
 #endif //PDE_SOLVER_IO_H
