@@ -41,39 +41,38 @@ inputConfig io::read_input(const std::string& filename)
 
         else if (key == "nx") {
             if (!(iss >> cfg.nx))
-                throw std::runtime_error("nx must be an integer");
+                throw std::runtime_error("nx must be a positive integer");
         }
         else if (key == "ny") {
             if (!(iss >> cfg.ny))
-                throw std::runtime_error("ny must be an integer");
+                throw std::runtime_error("ny must be a positive integer");
         }
         else if (key == "lx") {
             if (!(iss >> cfg.lx))
-                throw std::runtime_error("lx must be an integer");
+                throw std::runtime_error("lx must be a number");
         }
         else if (key == "ly") {
             if (!(iss >> cfg.ly))
-                throw std::runtime_error("ly must be an integer");
+                throw std::runtime_error("ly must be a number");
         }
 
         //bcs
         else if (key == "t_bot") {
             if (!(iss >> cfg.t_bot))
-                throw std::runtime_error("t_bot must be an integer");
+                throw std::runtime_error("t_bot must be a real number");
         }
         else if (key == "t_top") {
             if (!(iss >> cfg.t_top))
-                throw std::runtime_error("t_top must be an integer");
+                throw std::runtime_error("t_top must be a real number");
         }
         else if (key == "t_left") {
             if (!(iss >> cfg.t_left))
-                throw std::runtime_error("t_left must be an integer");
+                throw std::runtime_error("t_left must be a real number");
         }
         else if (key == "t_right") {
             if (!(iss >> cfg.t_right))
-                throw std::runtime_error("t_right must be an integer");
+                throw std::runtime_error("t_right must be a real number");
         }
-
 
         //inner bcs
         else if (key == "n_in_bc") {
@@ -119,19 +118,19 @@ inputConfig io::read_input(const std::string& filename)
 
         //implementation of polar....
         else if (key == "lr") {
-            if (!(iss >> cfg.lx))
+            if (!(iss >> cfg.lr))
                 throw std::runtime_error("lr must be positive");
         }
         else if (key == "nr") {
-            if (!(iss >> cfg.nx))
+            if (!(iss >> cfg.nr))
                 throw std::runtime_error("nr must be an integer");
         }
         else if (key == "na") {
-            if (!(iss >> cfg.ny))
+            if (!(iss >> cfg.na))
                 throw std::runtime_error("na must be an integer ");
         }
         else if (key == "t_out") {
-            if (!(iss >> cfg.t_bot))
+            if (!(iss >> cfg.t_out))
                 throw std::runtime_error("t_out must be double ");
         }
     }
@@ -140,7 +139,6 @@ inputConfig io::read_input(const std::string& filename)
 
 
 
-//Not a good implementation of write_output() but cannot finalised before seeing the implementation of polar...
 
 void io::write_output(const Mesh& mesh, const inputConfig& cfg, double dx, double dy)
 {
@@ -187,12 +185,11 @@ void io::write_output(const Mesh& mesh, const inputConfig& cfg, double dr, doubl
     outfile << std::fixed << std::setprecision(6);
     //iteration over mesh
     outfile << 0.0 << "," << 00.0 << "," << center << '\n';
-    for (int i = 1; i <= cfg.nx; i++) {
-        for (int j = 0; j < cfg.ny; j++) {
+    for (int i = 1; i <= cfg.nr; i++) {
+        for (int j = 0; j < cfg.na; j++) {
             r = i * dr;
             a = j * da;
             //write
-            //for some reason a space is introduced for before y and temp?
             outfile << r << "," << a << "," << mesh[i - 1][j] << '\n';
         }
     }

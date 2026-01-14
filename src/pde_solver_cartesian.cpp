@@ -4,7 +4,6 @@
 
 #include "pde_solver_cartesian.h"
 
-//mesh implementation may diifer in polar? i am not sure
 using Mesh = std::vector<std::vector<double>>;
 
 //Constructor initialises the mesh and sets bcs
@@ -22,7 +21,7 @@ void pde_solver_cartesian::initialize_mesh()
         throw std::runtime_error("nx and ny must be more than 2");
 
     if (_cfg.nx > 100000 || _cfg.ny > 100000)
-        throw std::runtime_error("Mesh dimensions too large"); //should the min required dimension reported to user?
+        throw std::runtime_error("Mesh dimensions too large");
 
     if (_cfg.lx <= 0 || _cfg.ly <= 0)
         throw std::runtime_error("Domain lengths must be positive");

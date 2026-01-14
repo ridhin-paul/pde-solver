@@ -7,7 +7,6 @@
 #include <fstream>
 #include "pde_solver_polar.h"
 
-//mesh implementation may diifer in polar? i am not sure
 using Mesh = std::vector<std::vector<double>>;
 
 //Constructor initialises the mesh and sets bcs
@@ -21,25 +20,25 @@ pde_solver_polar::pde_solver_polar(const inputConfig& cfg): pde_solver(cfg)
 
 void pde_solver_polar::initialize_mesh()
 {
-    if (_cfg.nx <= 2 || _cfg.ny <= 2)
+    if (_cfg.nr <= 2 || _cfg.na <= 2)
         throw std::runtime_error("nr and na must be more than 2");
 
-    if (_cfg.nx > 100000 || _cfg.ny > 100000)
-        throw std::runtime_error("Mesh dimensions too large"); //should the min required dimension reported to user?
+    if (_cfg.nr > 100000 || _cfg.na > 100000)
+        throw std::runtime_error("Mesh dimensions too large");
 
-    if (_cfg.lx <= 0)
+    if (_cfg.lr <= 0)
         throw std::runtime_error("Domain radius must be positive");
 
-    _dx = _cfg.lx / _cfg.nx;
-    _dy = 2 * M_PI / _cfg.ny;
+    _dx = _cfg.lr / _cfg.nr;
+    _dy = 2 * M_PI / _cfg.na;
 
-    _mesh = Mesh(_cfg.nx, std::vector<double>(_cfg.ny, 0.0));
+    _mesh = Mesh(_cfg.nr, std::vector<double>(_cfg.na, 0.0));
 }
 
 
 void pde_solver_polar::initialize_boundary_conditions()
-{   for (int i = 0; i < _cfg.ny; i++) {
-        _mesh[_cfg.nx - 1][i] = _cfg.t_bot;
+{   for (int i = 0; i < _cfg.na; i++) {
+        _mesh[_cfg.nr - 1][i] = _cfg.t_out;
     }
     int c {0};
     for (const auto& [ix, iy, t] : _cfg.inner_bcs) {
@@ -80,28 +79,28 @@ void pde_solver_polar::solve()
         //update center first
         if (!is_bc(0, 0)) {
             _center = 0;
-            for (int i = 0; i < _cfg.ny; i++) {
+            for (int i = 0; i < _cfg.na; i++) {
                 _center += _mesh[0][i];
             }
-            _center /= _cfg.ny;
+            _center /= _cfg.na;
         }
         //update from insideout
-        for (int i = 0; i < _cfg.nx - 1; i++) {
+        for (int i = 0; i < _cfg.nr - 1; i++) {
             //update from left to right
             double A = 1 + 1.0 / (2 * i + 2);
             double B = 1 - 1.0 / (2 * i + 2);
             double D = (1.0 / (i + 1) / _dy) * (1.0 / (i + 1) / _dy);
             double C = 2 + 2 * D;
-            for (int j = 0; j < _cfg.ny; j++) {
+            for (int j = 0; j < _cfg.na; j++) {
                 if (!is_bc(i, j)) {
                     //save old value
                     t_old = _mesh[i][j];
                     //overwrite node with new value
                     if (i == 0) {
-                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _center + D * (_mesh[i][std::fmod(_cfg.ny + j - 1, _cfg.ny)] + _mesh[i][std::fmod(_cfg.ny + j + 1, _cfg.ny)]));
+                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _center + D * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
                     }
                     else {
-                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _mesh[i - 1][j] + D * (_mesh[i][std::fmod(_cfg.ny + j - 1, _cfg.ny)] + _mesh[i][std::fmod(_cfg.ny + j + 1, _cfg.ny)]));
+                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _mesh[i - 1][j] + D * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
                     }
                     //compute difference between old and new value
                     diff = std::abs(t_old - _mesh[i][j]);

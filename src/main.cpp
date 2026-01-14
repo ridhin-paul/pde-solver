@@ -19,29 +19,19 @@ try
         {
             case inputConfig::CoordinateSystem::Cartesian:
                 solver = std::make_unique<pde_solver_cartesian>(cfg);
-                break;
-            case inputConfig::CoordinateSystem::Polar:
-                solver = std::make_unique<pde_solver_polar>(cfg);
-                break;
-            default:
-                throw std::runtime_error("Unknown input config");
-        }
-
-        solver->solve();
-        std::cout << "Solver finished, starting export." << std::endl;
-        //cfg has 2 copies (base class solver and in main) but would be made one later
-        switch (cfg.cs)
-        {
-            case inputConfig::CoordinateSystem::Cartesian:
+                solver->solve();
+                std::cout << "Solver finished, starting export." << std::endl;
                 io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy);
                 break;
             case inputConfig::CoordinateSystem::Polar:
-                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy, solver->_center);
+                solver = std::make_unique<pde_solver_polar>(cfg);
+                solver->solve();
+                std::cout << "Solver finished, starting export." << std::endl;
+                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy, solver -> _center);
                 break;
             default:
                 throw std::runtime_error("Unknown input config");
         }
-
         return 0;
     }
 

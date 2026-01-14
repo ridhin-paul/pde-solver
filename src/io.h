@@ -14,9 +14,9 @@ using Mesh = std::vector<std::vector<double>>;
 struct inputConfig
 {
     // cs type
-    enum class CoordinateSystem { Cartesian, Polar }; //maybe consider transient later
+    enum class CoordinateSystem { Cartesian, Polar };
 
-    //default as cartesian -> may be change th elogic to throw an exception
+    //default as cartesian
     CoordinateSystem cs = CoordinateSystem::Cartesian;
 
     //cartesian
@@ -33,9 +33,12 @@ struct inputConfig
     int max_iter = 1000;
     double tolerance = 1e-8;
 
-    //polar implementation
+    //polar
+    int nr, na;
+    double lr;
 
-
+    //bcs
+    double t_out;
 };
 
 
