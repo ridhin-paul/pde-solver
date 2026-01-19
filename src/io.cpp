@@ -99,11 +99,11 @@ inputConfig io::read_input(const std::string& filename)
                         break;
                     }
                     case inputConfig::CoordinateSystem::Polar:
-                        if (x < 0.0 || x > cfg.lx)
+                        if (x < 0.0 || x > cfg.lr)
                             throw std::runtime_error("Inner BC coordinate outside domain");
                         y = std::fmod(y, 2 * M_PI);
-                        ix = static_cast<int>(std::round((x / cfg.lx) * cfg.nx));
-                        iy = static_cast<int>(y / (2 * M_PI) * cfg.ny);
+                        ix = static_cast<int>(std::round((x / cfg.lr) * cfg.nr));
+                        iy = static_cast<int>(y / (2 * M_PI) * cfg.na);
                         break;
                     default:
                         throw std::runtime_error("Undeclared coordinate system, declare before bcs!");
