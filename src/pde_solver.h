@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include "io.h"
+#include <chrono>
 
 
 class pde_solver
@@ -15,7 +16,7 @@ protected: //as per lecture now this can be accessed in derived class when imple
     double _dx, _dy;
 
 public:
-    //need to look for safety or find alternate logic =>required for write_output()
+
     Mesh getMesh(){return _mesh;};
     double getCenter() const {return _center;}
     double getdx() const {return _dx;}
@@ -29,4 +30,29 @@ public:
 
 };
 
+//Benchmarking
+
+class Timer {
+
+    public:
+
+
+    std::chrono::time_point<std::chrono::steady_clock> start, end;
+    std::chrono::duration<double> duration;
+    std::string name;
+
+    Timer(std::string name) : name(name), start(std::chrono::steady_clock::now())
+    {
+         start = std::chrono::high_resolution_clock::now();
+
+    }
+
+    ~Timer()
+    {
+        end = std::chrono::high_resolution_clock::now();
+        duration = end-start;
+
+        std::cout<<"Elapsed time for" << name <<" : "<<duration.count()*1000<<std::endl;
+    }
+};
 #endif

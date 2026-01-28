@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 using Mesh = std::vector<std::vector<double>>;
 

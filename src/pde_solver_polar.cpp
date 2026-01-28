@@ -55,7 +55,7 @@ void pde_solver_polar::initialize_boundary_conditions()
 }
 
 
-//what if it's too large? ->sprint 3    make mesh Aos with value + bool
+//what if it's too large? ->sprint 3
 bool pde_solver_polar::is_bc(int i, int j)
 {
     //checks if node in mesh is set as inner bc
