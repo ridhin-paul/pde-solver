@@ -12,6 +12,7 @@ class pde_solver
 protected: //as per lecture now this can be accessed in derived class when implemented as public.
     inputConfig _cfg;
     Mesh _mesh;
+    std::vector<std::vector<bool>> _isnt_bc;
     double _center;
     double _dx, _dy;
 
@@ -48,7 +49,7 @@ class Timer {
 
     ~Timer()
     {
-        end = std::chrono::high_resolution_clock::now();
+        end = std::chrono::steady_clock::now();
         duration = end-start;
 
         std::cout<<"Elapsed time for" << name <<" : "<<duration.count()*1000<<std::endl;

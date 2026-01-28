@@ -37,7 +37,8 @@ void pde_solver_polar::initialize_mesh()
 
 
 void pde_solver_polar::initialize_boundary_conditions()
-{   for (int i = 0; i < _cfg.na; i++) {
+{   _isnt_bc = std::vector<std::vector<bool>>(_cfg.nr, std::vector<bool>(_cfg.na, true));
+    for (int i = 0; i < _cfg.na; i++) {
         _mesh[_cfg.nr - 1][i] = _cfg.t_out;
     }
     int c {0};
@@ -48,15 +49,17 @@ void pde_solver_polar::initialize_boundary_conditions()
             _center += t;
             _center /= c + 1;
             c++;
+            _center_bc = false;
         }
         else
             _mesh[ix][iy] = t;
+            _isnt_bc[ix][iy] = false;
     }
 }
 
 
 //what if it's too large? ->sprint 3
-bool pde_solver_polar::is_bc(int i, int j)
+/*bool pde_solver_polar::is_bc(int i, int j)
 {
     //checks if node in mesh is set as inner bc
     //outputs true or false -> node gets updated or not
@@ -67,6 +70,7 @@ bool pde_solver_polar::is_bc(int i, int j)
     }
     return false;
 }
+*/
 
 void pde_solver_polar::solve()
 {
@@ -77,7 +81,7 @@ void pde_solver_polar::solve()
     while (iter <= _cfg.max_iter) {
         double max_diff = 0.0;
         //update center first
-        if (!is_bc(0, 0)) {
+        if (_center_bc) {
             _center = 0;
             for (int i = 0; i < _cfg.na; i++) {
                 _center += _mesh[0][i];
@@ -92,7 +96,7 @@ void pde_solver_polar::solve()
             double D = (1.0 / (i + 1) / _dy) * (1.0 / (i + 1) / _dy);
             double C = 2 + 2 * D;
             for (int j = 0; j < _cfg.na; j++) {
-                if (!is_bc(i, j)) {
+                if (_isnt_bc[i][j]) {
                     //save old value
                     t_old = _mesh[i][j];
                     //overwrite node with new value

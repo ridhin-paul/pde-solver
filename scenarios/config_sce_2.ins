@@ -1,0 +1,28 @@
+# Coordinate system: polar or cartesian
+cs polar
+
+# Grid:
+# for cartesian: number of nodes in x and y direction (nx, ny), and length of domain in x and y direction (lx, ly)
+# for polar: number of nodes in radial and azimuthal direction (nr, na), and radius of domain (lr)
+nr 200
+na 200
+lr 1
+
+# solver: max iterations (max_iter) and required tolerance between update steps to count as converged (tolerance)
+max_iter 100000
+tolerance 1e-6
+
+# boundary conditions
+# for cartesian: bottom: y = 0 (t_bot); top: y = ly (t_top); left: x = 0 (t_left); right: x = lx (t_right)
+# for polar: outside: r = lr (t_out);
+t_out -5.0
+
+# inner boundary conditions:
+# !first! declare number of boundary conditions inside the grid (n_in_bc)           # need to write logic so as to not input n_in_bc
+# second give coordinates and value of boundary condition:
+# for cartesian: x-coord y-coord value
+# for polar: radius angle(in radiants) value
+n_in_bc 3
+0.0 0.0 5.0
+0.5 0.0 -3.0
+0.5 3.14 -3.0

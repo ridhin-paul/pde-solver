@@ -48,15 +48,16 @@ void pde_solver_cartesian::initialize_boundary_conditions()
     for (int i = 1; i < _cfg.ny - 1; i++) {
         _mesh[_cfg.nx - 1][i] = _cfg.t_right;
     }
-
+    _isnt_bc = std::vector<std::vector<bool>>(_cfg.nx, std::vector<bool>(_cfg.ny, true));
     for (const auto& [ix, iy, t] : _cfg.inner_bcs) {
         _mesh[ix][iy] = t;
+        _isnt_bc[ix][iy] = false;
     }
 }
 
 
 //what if it's too large? ->sprint 3
-bool pde_solver_cartesian::is_bc(int i, int j) const
+/*bool pde_solver_cartesian::is_bc(int i, int j) const
 {
     //checks if node in mesh is set as inner bc
     //outputs true or false -> node gets updated or not
@@ -68,11 +69,12 @@ bool pde_solver_cartesian::is_bc(int i, int j) const
     }
     return false;
 }
+*/
 
 
 void pde_solver_cartesian::solve()
 {
-    Timer t2("solve");
+    Timer t2("solver");
 
     double alpha = _dx/_dy;
     double iter{0};
@@ -85,7 +87,7 @@ void pde_solver_cartesian::solve()
                 for (int i = 1; i < _cfg.nx - 1; i++) {
                     //update from left to right
                     for (int j = 1; j < _cfg.ny - 1; j++) {
-                        if (!is_bc(i, j)) {
+                        if (_isnt_bc[i][j]) {
                             //save old value
                             t_old = _mesh[i][j];
                             //overwrite node with new value
