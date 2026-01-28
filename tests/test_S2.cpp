@@ -50,7 +50,7 @@ TEST_CASE("Cartesian solver test scenerios", "[cartesian]") {
     SECTION("Happy path - Boundary condition check") {
         REQUIRE_NOTHROW(solver ->solve());
 
-        auto resMesh = solver->_mesh;
+        auto resMesh = solver->getMesh();
 
         for (int i = 0; i < nx; i++) {
             CHECK(resMesh[i][0] == t_bot_val);
@@ -69,7 +69,7 @@ TEST_CASE("Cartesian solver test scenerios", "[cartesian]") {
     SECTION("Happy path - Analytical solution comparison") {
 
         REQUIRE_NOTHROW(solver ->solve());
-        auto resMesh = solver->_mesh;
+        auto resMesh = solver->getMesh();
 
         constexpr  double tol = 1e-2;
 
@@ -129,7 +129,7 @@ TEST_CASE("Polar solver test scenerios", "[polar]") {
     SECTION("Happy path - Boundary condition and result check") {
         REQUIRE_NOTHROW(solver ->solve());
 
-        auto resMesh = solver->_mesh;
+        auto resMesh = solver->getMesh();
         constexpr  double tol = 1e-2;
 
         for (const auto &val: resMesh) {
