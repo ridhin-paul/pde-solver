@@ -43,7 +43,6 @@ class Timer {
 
     Timer(std::string name) : name(name), start(std::chrono::steady_clock::now())
     {
-         start = std::chrono::high_resolution_clock::now();
 
     }
 
