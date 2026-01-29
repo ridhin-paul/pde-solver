@@ -78,31 +78,12 @@ void pde_solver_polar::solve()
     for (int i = 0; i < _cfg.nr - 1; i++) {
         ABDC[i][0] = 1 + 1.0 / (2 * i + 2);                     //A
         ABDC[i][1] = 1 - 1.0 / (2 * i + 2);                     //B
-        ABDC[i][2] = (1.0 / (i + 1) * (i + 1) * _dy * _dy);     //D
+        ABDC[i][2] = 1.0 / ((i + 1) * (i + 1) * _dy * _dy);     //D
         ABDC[i][3] = 1.0 / (2 + 2 * ABDC[i][2]);                        //C
     }
     while (iter <= _cfg.max_iter) {
         double max_diff = 0.0;
-        //update inwards
-        for (int i = _cfg.nr - 2; i >= 0; i--) {
-            //update from left to right
-            for (int j = 0; j < _cfg.na; j++) {
-                if (!is_bc(i, j)) {
-                    //save old value
-                    t_old = _mesh[i][j];
-                    //overwrite node with new value
-                    if (i == 0) {
-                        _mesh[i][j] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][j] + ABDC[i][1] * _center + ABDC[i][2] * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
-                    }
-                    else {
-                        _mesh[i][j] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][j] + ABDC[i][1] * _mesh[i - 1][j] + ABDC[i][2] * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
-                    }
-                    //set max_diff of current iteration diff if higher than before
-                    max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][j]));
-                }
-            }
-        }
-        //update center last
+        //update center first
         if (!is_bc(0, 0)) {
             t_old = _center;
             _center = 0;
@@ -112,6 +93,57 @@ void pde_solver_polar::solve()
             _center /= _cfg.na;
             max_diff = std::max(max_diff, std::abs(t_old - _center));
         }
+        //update insideout
+        //special case for innermost ring: i = 0
+        //if j = 0
+        if (!is_bc(0, 0)) {
+            t_old = _mesh[0][0];
+            _mesh[0][0] = ABDC[0][3] * (ABDC[0][0] * _mesh[1][0] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][_cfg.na - 1] + _mesh[0][1]));
+            max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][0]));
+        }
+        //if 0 < j < _cfg.na - 1
+        for (int j = 1; j < _cfg.na - 1; j++) {
+            if (!is_bc(0, j)) {
+                t_old = _mesh[0][j];
+                _mesh[0][j] = ABDC[0][3] * (ABDC[0][0] * _mesh[0 + 1][j] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][j - 1] + _mesh[0][j + 1]));
+                max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][j]));
+            }
+        }
+        //if j = _cfg.na -1
+        if (!is_bc(0, _cfg.na - 1)) {
+            t_old = _mesh[0][_cfg.na - 1];
+            _mesh[0][_cfg.na - 1] = ABDC[0][3] * (ABDC[0][0] * _mesh[0 + 1][_cfg.na - 1] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][_cfg.na - 2] + _mesh[0][0]));
+            max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][_cfg.na - 1]));
+        }
+
+        //rest of mesh i > 0
+        for (int i = 1; i < _cfg.nr - 1; i++) {
+            //update from left to right
+            //if j = 0
+            if (!is_bc(i, 0)) {
+                t_old = _mesh[i][0];
+                _mesh[i][0] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][0] + ABDC[i][1] * _mesh[i - 1][0] + ABDC[i][2] * (_mesh[i][_cfg.na - 1] + _mesh[i][1]));
+                max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][0]));
+            }
+            //if 0 < j < _cfg.na - 1
+            for (int j = 1; j < _cfg.na - 1; j++) {
+                if (!is_bc(i, j)) {
+                    //save old value
+                    t_old = _mesh[i][j];
+                    //overwrite node with new value
+                    _mesh[i][j] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][j] + ABDC[i][1] * _mesh[i - 1][j] + ABDC[i][2] * (_mesh[i][j - 1] + _mesh[i][j + 1]));
+                    //set max_diff of current iteration diff if higher than before
+                    max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][j]));
+                }
+            }
+            //if j = _cfg.na -1
+            if (!is_bc(i, _cfg.na - 1)) {
+                t_old = _mesh[i][_cfg.na - 1];
+                _mesh[i][_cfg.na - 1] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][_cfg.na - 1] + ABDC[i][1] * _mesh[i - 1][_cfg.na - 1] + ABDC[i][2] * (_mesh[i][_cfg.na - 2] + _mesh[i][0]));
+                max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][_cfg.na - 1]));
+            }
+        }
+
         //if tolerance at each meshpoint between iterations reached -> solution converged, stop solver
         if (max_diff < _cfg.tolerance) {
             std::cout << "Required tolerance reached after " << iter << " iterations. Solution converged." << '\n';
