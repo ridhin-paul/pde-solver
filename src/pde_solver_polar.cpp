@@ -73,41 +73,42 @@ void pde_solver_polar::solve()
     double iter{0};
     double diff {0.0};
     double t_old {0};
-
+    //lookup table for denominators depending on distance from center
+    std::vector<std::vector<double>> ABDC = std::vector<std::vector<double>>(_cfg.nr, std::vector<double>(4, 0.0));
+    for (int i = 0; i < _cfg.nr - 1; i++) {
+        ABDC[i][0] = 1 + 1.0 / (2 * i + 2);                     //A
+        ABDC[i][1] = 1 - 1.0 / (2 * i + 2);                     //B
+        ABDC[i][2] = (1.0 / (i + 1) * (i + 1) * _dy * _dy);     //D
+        ABDC[i][3] = 1.0 / (2 + 2 * ABDC[i][2]);                        //C
+    }
     while (iter <= _cfg.max_iter) {
         double max_diff = 0.0;
         //update center first
         if (!is_bc(0, 0)) {
+            t_old = _center;
             _center = 0;
             for (int i = 0; i < _cfg.na; i++) {
                 _center += _mesh[0][i];
             }
             _center /= _cfg.na;
+            max_diff = std::max(max_diff, std::abs(t_old - _center));
         }
         //update from insideout
         for (int i = 0; i < _cfg.nr - 1; i++) {
             //update from left to right
-            double A = 1 + 1.0 / (2 * i + 2);
-            double B = 1 - 1.0 / (2 * i + 2);
-            double D = (1.0 / (i + 1) / _dy) * (1.0 / (i + 1) / _dy);
-            double C = 2 + 2 * D;
             for (int j = 0; j < _cfg.na; j++) {
                 if (!is_bc(i, j)) {
                     //save old value
                     t_old = _mesh[i][j];
                     //overwrite node with new value
                     if (i == 0) {
-                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _center + D * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
+                        _mesh[i][j] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][j] + ABDC[i][1] * _center + ABDC[i][2] * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
                     }
                     else {
-                        _mesh[i][j] = 1 / C * (A * _mesh[i + 1][j] + B * _mesh[i - 1][j] + D * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
+                        _mesh[i][j] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][j] + ABDC[i][1] * _mesh[i - 1][j] + ABDC[i][2] * (_mesh[i][std::fmod(_cfg.na + j - 1, _cfg.na)] + _mesh[i][std::fmod(_cfg.na + j + 1, _cfg.na)]));
                     }
-                    //compute difference between old and new value
-                    diff = std::abs(t_old - _mesh[i][j]);
-                    //set maxdiff of current iteration diff if higher than before
-                    if (diff > max_diff){
-                        max_diff = diff;
-                    }
+                    //set max_diff of current iteration diff if higher than before
+                    max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][j]));
                 }
             }
         }

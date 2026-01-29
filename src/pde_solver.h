@@ -48,7 +48,7 @@ class Timer {
 
     ~Timer()
     {
-        end = std::chrono::high_resolution_clock::now();
+        end = std::chrono::steady_clock::now();
         duration = end-start;
 
         std::cout<<"Elapsed time for" << name <<" : "<<duration.count()*1000<<std::endl;

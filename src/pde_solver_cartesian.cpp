@@ -75,8 +75,9 @@ void pde_solver_cartesian::solve()
     Timer t2("solve");
 
     double alpha = _dx/_dy;
+    const double alpha_squared = alpha * alpha;
+    const double denominator = 1/ (2 * (1 + alpha_squared));
     double iter{0};
-    double diff {0.0};
     double t_old {0};
 
     while (iter <= _cfg.max_iter) {
@@ -89,15 +90,10 @@ void pde_solver_cartesian::solve()
                             //save old value
                             t_old = _mesh[i][j];
                             //overwrite node with new value
-                            _mesh[i][j] = 1 / (2 * (1 + alpha * alpha)) * (_mesh[i - 1][j] + _mesh[i + 1][j] + alpha * alpha * (_mesh[i][j - 1] + _mesh[i][j + 1]));
-                            //compute difference between old and new value
-                            diff = std::abs(t_old - _mesh[i][j]);
+                            _mesh[i][j] = denominator * (_mesh[i - 1][j] + _mesh[i + 1][j] + alpha_squared * (_mesh[i][j - 1] + _mesh[i][j + 1]));
                             //set maxdiff of current iteration diff if higher than before
-                            if (diff > max_diff){
-                                max_diff = diff;
-                            }
+                            max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][j]));
                         }
-
                     }
                 }
                 //if tolerance at each meshpoint between iterations reached -> solution converged, stop solver
