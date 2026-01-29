@@ -83,18 +83,8 @@ void pde_solver_polar::solve()
     }
     while (iter <= _cfg.max_iter) {
         double max_diff = 0.0;
-        //update center first
-        if (!is_bc(0, 0)) {
-            t_old = _center;
-            _center = 0;
-            for (int i = 0; i < _cfg.na; i++) {
-                _center += _mesh[0][i];
-            }
-            _center /= _cfg.na;
-            max_diff = std::max(max_diff, std::abs(t_old - _center));
-        }
-        //update from insideout
-        for (int i = 0; i < _cfg.nr - 1; i++) {
+        //update inwards
+        for (int i = _cfg.nr - 2; i >= 0; i--) {
             //update from left to right
             for (int j = 0; j < _cfg.na; j++) {
                 if (!is_bc(i, j)) {
@@ -111,6 +101,16 @@ void pde_solver_polar::solve()
                     max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][j]));
                 }
             }
+        }
+        //update center last
+        if (!is_bc(0, 0)) {
+            t_old = _center;
+            _center = 0;
+            for (int i = 0; i < _cfg.na; i++) {
+                _center += _mesh[0][i];
+            }
+            _center /= _cfg.na;
+            max_diff = std::max(max_diff, std::abs(t_old - _center));
         }
         //if tolerance at each meshpoint between iterations reached -> solution converged, stop solver
         if (max_diff < _cfg.tolerance) {
