@@ -17,7 +17,6 @@ pde_solver_cartesian::pde_solver_cartesian(const inputConfig& cfg): pde_solver(c
 
 void pde_solver_cartesian::initialize_mesh()
 {
-    Timer t1("Initialize mesh cartesian");
     if (_cfg.nx <= 2 || _cfg.ny <= 2)
         throw std::runtime_error("nx and ny must be more than 2");
 
@@ -74,8 +73,6 @@ void pde_solver_cartesian::initialize_boundary_conditions()
 
 void pde_solver_cartesian::solve()
 {
-    Timer t2("solver");
-
     double alpha = _dx/_dy;
     const double alpha_squared = alpha * alpha;
     const double denominator = 1/ (2 * (1 + alpha_squared));
