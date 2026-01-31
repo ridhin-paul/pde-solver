@@ -5,7 +5,7 @@
 
 int main(int argc , char* argv[])
 {
-Timer t0 ("main");
+    Timer t0 ("Main");
 
 try
     {

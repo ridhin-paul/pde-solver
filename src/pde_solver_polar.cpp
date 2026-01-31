@@ -37,7 +37,8 @@ void pde_solver_polar::initialize_mesh()
 
 
 void pde_solver_polar::initialize_boundary_conditions()
-{   for (int i = 0; i < _cfg.na; i++) {
+{   _isnt_bc = std::vector<std::vector<bool>>(_cfg.nr, std::vector<bool>(_cfg.na, true));
+    for (int i = 0; i < _cfg.na; i++) {
         _mesh[_cfg.nr - 1][i] = _cfg.t_out;
     }
     int c {0};
@@ -48,15 +49,17 @@ void pde_solver_polar::initialize_boundary_conditions()
             _center += t;
             _center /= c + 1;
             c++;
+            _center_bc = false;
         }
         else
             _mesh[ix][iy] = t;
+            _isnt_bc[ix][iy] = false;
     }
 }
 
 
 //what if it's too large? ->sprint 3
-bool pde_solver_polar::is_bc(int i, int j)
+/*bool pde_solver_polar::is_bc(int i, int j)
 {
     //checks if node in mesh is set as inner bc
     //outputs true or false -> node gets updated or not
@@ -67,6 +70,7 @@ bool pde_solver_polar::is_bc(int i, int j)
     }
     return false;
 }
+*/
 
 void pde_solver_polar::solve()
 {
@@ -84,7 +88,7 @@ void pde_solver_polar::solve()
     while (iter <= _cfg.max_iter) {
         double max_diff = 0.0;
         //update center first
-        if (!is_bc(0, 0)) {
+        if (_center_bc) {
             t_old = _center;
             _center = 0;
             for (int i = 0; i < _cfg.na; i++) {
@@ -96,21 +100,21 @@ void pde_solver_polar::solve()
         //update insideout
         //special case for innermost ring: i = 0
         //if j = 0
-        if (!is_bc(0, 0)) {
+        if (_isnt_bc[0][0]) {
             t_old = _mesh[0][0];
             _mesh[0][0] = ABDC[0][3] * (ABDC[0][0] * _mesh[1][0] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][_cfg.na - 1] + _mesh[0][1]));
             max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][0]));
         }
         //if 0 < j < _cfg.na - 1
         for (int j = 1; j < _cfg.na - 1; j++) {
-            if (!is_bc(0, j)) {
+            if (_isnt_bc[0][j]) {
                 t_old = _mesh[0][j];
                 _mesh[0][j] = ABDC[0][3] * (ABDC[0][0] * _mesh[0 + 1][j] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][j - 1] + _mesh[0][j + 1]));
                 max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][j]));
             }
         }
         //if j = _cfg.na -1
-        if (!is_bc(0, _cfg.na - 1)) {
+        if (_isnt_bc[0][_cfg.na - 1]) {
             t_old = _mesh[0][_cfg.na - 1];
             _mesh[0][_cfg.na - 1] = ABDC[0][3] * (ABDC[0][0] * _mesh[0 + 1][_cfg.na - 1] + ABDC[0][1] * _center + ABDC[0][2] * (_mesh[0][_cfg.na - 2] + _mesh[0][0]));
             max_diff = std::max(max_diff, std::abs(t_old - _mesh[0][_cfg.na - 1]));
@@ -120,14 +124,14 @@ void pde_solver_polar::solve()
         for (int i = 1; i < _cfg.nr - 1; i++) {
             //update from left to right
             //if j = 0
-            if (!is_bc(i, 0)) {
+            if (_isnt_bc[i][0]) {
                 t_old = _mesh[i][0];
                 _mesh[i][0] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][0] + ABDC[i][1] * _mesh[i - 1][0] + ABDC[i][2] * (_mesh[i][_cfg.na - 1] + _mesh[i][1]));
                 max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][0]));
             }
             //if 0 < j < _cfg.na - 1
             for (int j = 1; j < _cfg.na - 1; j++) {
-                if (!is_bc(i, j)) {
+                if (_isnt_bc[i][j]) {
                     //save old value
                     t_old = _mesh[i][j];
                     //overwrite node with new value
@@ -137,7 +141,7 @@ void pde_solver_polar::solve()
                 }
             }
             //if j = _cfg.na -1
-            if (!is_bc(i, _cfg.na - 1)) {
+            if (_isnt_bc[i][_cfg.na - 1]) {
                 t_old = _mesh[i][_cfg.na - 1];
                 _mesh[i][_cfg.na - 1] = ABDC[i][3] * (ABDC[i][0] * _mesh[i + 1][_cfg.na - 1] + ABDC[i][1] * _mesh[i - 1][_cfg.na - 1] + ABDC[i][2] * (_mesh[i][_cfg.na - 2] + _mesh[i][0]));
                 max_diff = std::max(max_diff, std::abs(t_old - _mesh[i][_cfg.na - 1]));

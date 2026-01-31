@@ -12,6 +12,7 @@ class pde_solver
 protected: //as per lecture now this can be accessed in derived class when implemented as public.
     inputConfig _cfg;
     Mesh _mesh;
+    std::vector<std::vector<bool>> _isnt_bc;
     double _center;
     double _dx, _dy;
 

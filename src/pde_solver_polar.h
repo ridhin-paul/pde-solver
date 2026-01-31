@@ -15,6 +15,7 @@ private:
     void initialize_boundary_conditions();
 
     bool is_bc(int i, int j);
+    bool _center_bc;
 
 public:
     explicit pde_solver_polar(const inputConfig& cfg);
