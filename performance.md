@@ -26,7 +26,7 @@ specifically tracking the time spent per iteration.
 The implemented optimizations yielded a significant performance increase, resulting in an __81%__ reduction in total runtime for the Cartesian solver and a __55.43%__ reduction for the Polar solver. <br>
 
 
-![image](images/bencmark/comparison.png)
+![comparison](images/benchmark/comparison.png)
 
 ### Comparison of output from the perf tool
 
@@ -39,11 +39,11 @@ PDE logic.
 
 ##### Before
 
-![image](images/bencmark/init_cs.svg) <br>
+![init_cs](images/benchmark/init_cs.svg) <br>
 
 ##### After
 
-![image](images/bencmark/final_cs.svg)
+![final_cs](images/benchmark/final_cs.svg)
 
 #### Polar solver
 
@@ -55,8 +55,8 @@ This resulted in a 55.43% reduction in runtime (2.24x speedup).
 
 ##### Before
 
-![image](images/bencmark/init_po.svg) <br>
+![init_po](images/benchmark/init_po.svg) <br>
 
 ##### After
 
-![image](images/bencmark/final_po.svg)
+![final_po](images/benchmark/final_po.svg)
