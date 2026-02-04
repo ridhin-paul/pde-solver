@@ -18,6 +18,9 @@ specifically tracking the time spent per iteration.
 2. __System-level tool:__ The Linux perf utility was used to profile the execution at the kernel level. This allowed for the identification of CPU bottlenecks
 
 ## Optimisations
+1. function is_bc to vector 
+2. precalculated values
+3. loop transform
 
 ## Results
 
