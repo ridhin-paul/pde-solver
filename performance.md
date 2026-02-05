@@ -73,7 +73,7 @@ __Note on Results:__
 * Polar system (Scenario 2) requires greater number of iterations for convergence. (Scenario1: 12061, Scenario 2: 46063, Scenario 3: 33300)
 * Optimization 3 builds on Optimization 2. 
   
-The measured runtimes for each scenario and optimization step are shown below:
+The measured runtimes for each scenario and optimization step are shown below:  
 ![scenario1](images/benchmark/scenario_1.svg)
 ![scenario2](images/benchmark/scenario_2.svg)
 ![scenario3](images/benchmark/scenario_3.svg)
