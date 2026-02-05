@@ -106,19 +106,10 @@ The final build combines all three optimizations. The most dramatic cumulative i
 where the runtime dropped by 85% (from 232.6 seconds to 34.6 seconds). Scenario 2 also saw a major improvement of 74% in runtime, primarily driven by the removal of branching and math-heavy wrap-around logic.
 
 ### Comparison of output from the perf tool
-
-
-## Conclusion
-The performance analysis highlights that the transition from a dynamic search-based boundary check to a Boolean Mesh Mask was the
-single most effective optimization for general solver scalability. Furthermore, specialized coordinate systems like the Polar grid
-require targeted loop transformations to eliminate mathematical overhead (fmod) and branching. 
-
-
-
 #### Cartesian solver
 
-The transition from the initial baseline to the optimized implementation resulted in a drastic shift in the solver's execution profile. In the initial version (Before), 
-the system was heavily bottlenecked by logic overhead, with 84.79% of the runtime consumed by the is_bc()  function and its associated iterator increments. 
+The transition from the initial baseline to the optimized implementation resulted in a drastic shift in the solver's execution profile. In the initial version (Before),
+the system was heavily bottlenecked by logic overhead, with 84.79% of the runtime consumed by the is_bc()  function and its associated iterator increments.
 By refactoring the boundary condition checks into (_isnt_bc) and applying optimizations, this overhead was eliminated. Consequently, the final profile (After) shows the CPU spending the majority of its cycles (68.13%) on core
 PDE logic.
 
@@ -132,11 +123,10 @@ PDE logic.
 
 #### Polar solver
 
-The initial profile (Before) showed that 49.98% of the total runtime was consumed by expensive modulo arithmetic (fmod), 
+The initial profile (Before) showed that 49.98% of the total runtime was consumed by expensive modulo arithmetic (fmod),
 in addition to the 27.72% overhead from boundary searches.
-By optimizing the periodic logic to remove these fmod calls and refactoring the boundary checks, the final implementation (After) successfully eliminated these arithmetic stalls. 
+By optimizing the periodic logic to remove these fmod calls and refactoring the boundary checks, the final implementation (After) successfully eliminated these arithmetic stalls.
 This resulted in a 55.43% reduction in runtime (2.24x speedup).
-
 
 ##### Before
 
@@ -145,3 +135,12 @@ This resulted in a 55.43% reduction in runtime (2.24x speedup).
 ##### After
 
 ![final_po](images/benchmark/final_po.svg)
+
+## Conclusion
+The performance analysis highlights that the transition from a dynamic search-based boundary check to a Boolean Mesh Mask was the
+single most effective optimization for general solver scalability. Furthermore, specialized coordinate systems like the Polar grid
+require targeted loop transformations to eliminate mathematical overhead (fmod) and branching. 
+
+
+
+
