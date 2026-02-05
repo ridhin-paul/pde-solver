@@ -37,7 +37,7 @@ The results of the profiling for the third scenario results in the call tree bel
 As can be seen almost 85% of the runtime is used by one function (`is_bc`).  
 The results of the profiling for the second scenario results in the call tree below:  
 ![init_po](images/benchmark/init_po.svg)
-Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function.
+Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function and 49.98% of the runtime by `std::fmod` which is the critical performance bottleneck of the polar solver's total runtime.
 (Please download the image for a better visualisation).
 
 ## Optimization
