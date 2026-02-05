@@ -38,7 +38,7 @@ As can be seen almost 85% of the runtime is used by one function (`is_bc`).
 The results of the profiling for the second scenario results in the call tree below:  
 ![init_po](images/benchmark/init_po.svg)
 Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function.
-here the green part, not readable, too small, needs a new png
+(Please download the image for a better visualisation).
 
 ## Optimization
 ### Optimization 1: Boolean Mesh Mask
@@ -80,12 +80,12 @@ The measured runtimes for each scenario and optimization step are shown below:
 The mean values are:
 
 | Optimization stage                         | Scenario 1 | Scenario 2 | Scenario 3 |
-|:-------------------------------------------| :---: | :---: | :---: |
-| Initial code                               | 2051.7 ms | 29020 ms | 232640 ms |
-| Optimization 1: Boolean Mesh Mask          | 1988.4 ms | 27350 ms | 35180 ms |
-| Optimization 2: Precalculated Coefficients | 1995.9 ms | 29037 ms | 223580 ms |
-| Optimization 3: Loop Transformation        | 2011.9 ms | 7661 ms | 221390 ms |
-| Final Build                                | 1971.6 ms | 7524 ms | 34650 ms |
+|:-------------------------------------------|:----------:|:----------:|:----------:|
+| Initial code                               | 2051.7 ms  |  29020 ms  | 232640 ms  |
+| Optimization 1: Boolean Mesh Mask          | 1988.4 ms  |  27350 ms  |  35180 ms  |
+| Optimization 2: Precalculated Coefficients | 1995.9 ms  |  29037 ms  | 223580 ms  |
+| Optimization 3: Loop Transformation        | 2011.9 ms  |  7661 ms   | 221390 ms  |
+| Final Build                                | 1971.6 ms  |  7524 ms   |  34650 ms  |
 
 ### Optimization 1: Boolean Mesh Mask
 This optimization targeted the most severe bottleneck identified during profiling. The results demonstrate a significant reduction in runtime across all scenarios.
@@ -111,8 +111,7 @@ where the runtime dropped by 85% (from 232.6 seconds to 34.6 seconds). Scenario 
 ## Conclusion
 The performance analysis highlights that the transition from a dynamic search-based boundary check to a Boolean Mesh Mask was the
 single most effective optimization for general solver scalability. Furthermore, specialized coordinate systems like the Polar grid
-require targeted loop transformations to eliminate mathematical overhead (fmod) and branching. Together, these optimizations have shifted
-the solver's profile from being logic-bound to being compute-bound, maximizing the utility of the CPU's processing power.
+require targeted loop transformations to eliminate mathematical overhead (fmod) and branching. 
 
 
 
