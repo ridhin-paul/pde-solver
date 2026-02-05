@@ -109,7 +109,10 @@ where the runtime dropped by 85% (from 232.6 seconds to 34.6 seconds). Scenario 
 
 
 ## Conclusion
-
+The performance analysis highlights that the transition from a dynamic search-based boundary check to a Boolean Mesh Mask was the
+single most effective optimization for general solver scalability. Furthermore, specialized coordinate systems like the Polar grid
+require targeted loop transformations to eliminate mathematical overhead (fmod) and branching. Together, these optimizations have shifted
+the solver's profile from being logic-bound to being compute-bound, maximizing the utility of the CPU's processing power.
 
 
 
