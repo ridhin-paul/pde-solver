@@ -37,7 +37,8 @@ The results of the profiling for the third scenario results in the call tree bel
 As can be seen almost 85% of the runtime is used by one function (`is_bc`).  
 The results of the profiling for the second scenario results in the call tree below:
 ![init_po](images/benchmark/init_po.svg)
-Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function. 
+Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function.
+here the green part, not readable, too small, needs a new png
 
 ## Optimization
 ### Optimization 1: Boolean Mesh Mask
@@ -59,18 +60,18 @@ index during the iteration.
 __Impact:__ This eliminates thousands of redundant floating-point operations per iteration.
 
 ### Optimization 3: Loop Transformation
-__Original:__ The polar solver used a single loop for the entire mesh with an internal if statement for the innermost
+__Original:__ The polar solver used a single loop for the entire mesh with an internal `if` condition for the innermost
 circle of nodes. Additionally, `std::fmod` was used to handle the wrap-around-logic for the first and last azimuthal elements.  
 __Change:__ The loop is unrolled to handle the innermost circle and the first and last azimuthal elements separately.
-This eliminates the need for the additional if statement and the `std::fmod`.  
+This eliminates the need for the additional `if` condition and the `std::fmod`.  
 __Impact:__ This loop transformation reduces the number of functions called and if statements evaluated for each iteration.
 
 ## Results
 __Note on Results:__ 
-* All measurements (initial, opt 1-3, final) were conducted with `-O3` compiler optimization. This reduces impact of optimization 2.
+* All measurements (initial, opt 1-3, final) were conducted with `-O3` compiler optimization. This reduces impact of Optimization 2.
 * Runtimes are system specific, all measurements were performed on one system.
-* Polar system (scenario 2) requires greater number of iterations for convergence. (Scenario1: 12061, Scenario 2: 46063, Scenario 3: 33300)
-* Optimization 3 builds on optimization 2. 
+* Polar system (Scenario 2) requires greater number of iterations for convergence. (Scenario1: 12061, Scenario 2: 46063, Scenario 3: 33300)
+* Optimization 3 builds on Optimization 2. 
   
 The measured runtimes for each scenario and optimization step are shown below:
 ![scenario1](images/benchmark/scenario_1.svg)
@@ -78,22 +79,39 @@ The measured runtimes for each scenario and optimization step are shown below:
 ![scenario3](images/benchmark/scenario_3.svg)
 The mean values are:
 
-| Optimization stage | Scenario 1 | Scenario 2 | Scenario 3 |
-| :--- | :---: | :---: | :---: |
-| Initial code | 2051.7 ms | 29020 ms | 232640 ms |
-| Optimization 1: Boolean Mesh Mask | 1988.4 ms | 27350 ms | 35180 ms |
+| Optimization stage                         | Scenario 1 | Scenario 2 | Scenario 3 |
+|:-------------------------------------------| :---: | :---: | :---: |
+| Initial code                               | 2051.7 ms | 29020 ms | 232640 ms |
+| Optimization 1: Boolean Mesh Mask          | 1988.4 ms | 27350 ms | 35180 ms |
 | Optimization 2: Precalculated Coefficients | 1995.9 ms | 29037 ms | 223580 ms |
-| Optimization 3: Loop Transformation | 2011.9 ms | 7661 ms | 221390 ms |
-| Final code | 1971.6 ms | 7524 ms | 34650 ms |
+| Optimization 3: Loop Transformation        | 2011.9 ms | 7661 ms | 221390 ms |
+| Final Build                                | 1971.6 ms | 7524 ms | 34650 ms |
 
-### Final result comparing before and after all the optimisations
+### Optimization 1: Boolean Mesh Mask
+This optimization targeted the most severe bottleneck identified during profiling. The results demonstrate a significant reduction in runtime across all scenarios.
+While Scenario 1 shows a modest improvement of ~3%, Scenario 3 exhibits a massive 85% reduction in runtime. This is due to the increased number of boundary conditions in addition to the larger mesh.
+Scenario 2 with a higher iteration count than Scenario 1 reduces its runtime by around 5%.
 
-The implemented optimizations yielded a significant performance increase, resulting in an __81%__ reduction in total runtime for the Cartesian solver and a __55.43%__ reduction for the Polar solver. <br>
+### Optimization 2: Precalculated Coefficients
+In isolation, this step showed negligible impact or even slight fluctuations in runtime. This is likely due to the -O3 compiler flag already optimizing many
+of the constant floating-point operations. In Scenario 3, a small improvement was noted (~4%), but the major performance gain for this specific logic was only
+unlocked when combined with subsequent loop transformations.
 
+### Optimization 3: Loop Transformation
+This step targeted solely the Polar Coordinate System (Scenario 2), resulting in a 73% reduction in runtime compared to Step 2. By removing the 
+`if` conditions and `std::fmod` calls from the inner loops, the number of operations needed per operation was drastically reduced.
 
-![comparison](images/benchmark/comparison.png)
+### Final Build
+The final build combines all three optimizations. The most dramatic cumulative improvement is seen in Scenario 3,
+where the runtime dropped by 85% (from 232.6 seconds to 34.6 seconds). Scenario 2 also saw a major improvement of 74% in runtime, primarily driven by the removal of branching and math-heavy wrap-around logic.
 
 ### Comparison of output from the perf tool
+
+
+## Conclusion
+
+
+
 
 #### Cartesian solver
 

@@ -95,18 +95,18 @@ For single feature additions (e.g. other boundary conditions, implement transien
 You may need to update the io-class, depending on your input/output-needs.
 
 ## Roadmap
-The requirements for Sprint 1 of the Bonus Project were:
+The requirements for Sprint 1 were:
 * working solver,
 * output of steady-state solution to file,
 * at least one unit test, 
 * comprehensive `README.md` file.
 
-The current implementation fulfills the requirements for Sprint 2, these are: 
+The requirements for sprint 2 were: 
 * different meshes loadable from directory,
 * user-friendly, logical additional input,
 * explanation on how to extend the code further.
 
-In the third and last Sprint the performance of the code ´will be improved. This includes:
+The current code fulfills the requirements for sprint 3. This includes:
 * observations and performance analysis, 
 * at least three different optimization techniques applied and observed,
 * the most optimized final code.
