@@ -32,10 +32,10 @@ specifically tracking the time spent per iteration.
 2. __System-level tool:__ The Linux perf utility was used to profile the execution at the kernel level. This allowed for the identification of CPU bottlenecks
 
 ## Profiling
-The results of the profiling for the third scenario results in the call tree below:
+The results of the profiling for the third scenario results in the call tree below:  
 ![init_cs](images/benchmark/init_cs.svg)
 As can be seen almost 85% of the runtime is used by one function (`is_bc`).  
-The results of the profiling for the second scenario results in the call tree below:
+The results of the profiling for the second scenario results in the call tree below:  
 ![init_po](images/benchmark/init_po.svg)
 Like in scenario 3, a big part of the runtime (almost 28%) is used by the `is_bc`-function.
 here the green part, not readable, too small, needs a new png
