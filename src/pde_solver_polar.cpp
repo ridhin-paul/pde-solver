@@ -17,7 +17,6 @@ pde_solver_polar::pde_solver_polar(const inputConfig& cfg): pde_solver(cfg)
 }
 
 
-
 void pde_solver_polar::initialize_mesh()
 {
     if (_cfg.nr <= 2 || _cfg.na <= 2)
@@ -57,20 +56,6 @@ void pde_solver_polar::initialize_boundary_conditions()
     }
 }
 
-
-//what if it's too large? ->sprint 3
-/*bool pde_solver_polar::is_bc(int i, int j)
-{
-    //checks if node in mesh is set as inner bc
-    //outputs true or false -> node gets updated or not
-    for (const auto& [bc_x, bc_y, t] : _cfg.inner_bcs) {
-        if (i == bc_x && j == bc_y) {
-            return true;
-        }
-    }
-    return false;
-}
-*/
 
 void pde_solver_polar::solve()
 {
