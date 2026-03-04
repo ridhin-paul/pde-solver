@@ -1,6 +1,5 @@
 add_executable(run_tests
-        test_S2.cpp
-        test_S1.cpp
+        tests.cpp
 )
 
 
