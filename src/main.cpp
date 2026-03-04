@@ -3,13 +3,22 @@
 #include "pde_solver_cartesian.h"
 #include "pde_solver_polar.h"
 
-int main()
+int main(int argc , char* argv[])
 {
-
+    Timer t0 ("Main");
 
 try
     {
-        inputConfig cfg = io::read_input("config.ins");
+    if (argc < 2)
+    {
+        throw std::runtime_error(
+            "Usage: ./pde_solver <input_config_file>"
+        );
+    }
+
+    std::string input_file = argv[1];
+
+    inputConfig cfg = io::read_input(input_file);
 
         std::unique_ptr<pde_solver> solver;
 
@@ -21,13 +30,13 @@ try
                 solver = std::make_unique<pde_solver_cartesian>(cfg);
                 solver->solve();
                 std::cout << "Solver finished, starting export." << std::endl;
-                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy);
+                io::write_output(solver->getMesh(), cfg, solver->getdx(), solver->getdy());
                 break;
             case inputConfig::CoordinateSystem::Polar:
                 solver = std::make_unique<pde_solver_polar>(cfg);
                 solver->solve();
                 std::cout << "Solver finished, starting export." << std::endl;
-                io::write_output(solver->_mesh, cfg, solver->_dx, solver->_dy, solver -> _center);
+                io::write_output(solver->getMesh(), cfg, solver->getdx(), solver->getdy(), solver->getCenter());
                 break;
             default:
                 throw std::runtime_error("Unknown input config");
