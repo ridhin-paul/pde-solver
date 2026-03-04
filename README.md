@@ -115,6 +115,5 @@ The current code fulfills the requirements for sprint 3. This includes:
 This project is the Bonus Project of Group 65 of the Advanced Programming lecture at TUM in the Wintersemester 2025/26.
 
 Authors:
-* Narayan Adhikari
 * Ridhin Paul
 * Julius Sellmayer
